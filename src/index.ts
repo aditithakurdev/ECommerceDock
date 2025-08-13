@@ -1,26 +1,40 @@
-// src/index.ts
 import express from "express";
 import dotenv from "dotenv";
 import './config/database';
-import db from './config/database'
-console.log("Main app starting...");
+import db from './config/database';
+import route from "./routes/user/user";
 
 dotenv.config();
+console.log("Main app starting...");
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+});
 
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3005;
 
 // Test DB connection
 (async () => {
   try {
     await db.authenticate();
     console.log("Database connected successfully!");
+    await db.sync({ alter: true }); // ✅ creates/updates tables
+    console.log("Database synced successfully!");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
   }
 })();
+
+// API Routes
+app.use("/api/users", route);
+
 app.get("/", (req, res) => {
   res.send("Hello from Node + TS + PostgreSQL!");
 });
