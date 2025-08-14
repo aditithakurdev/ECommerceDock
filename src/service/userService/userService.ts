@@ -4,16 +4,23 @@ import bcrypt from "bcrypt"
 class UserService {
   // Create a new user
     async createUser(data: { firstName: string; lastName?: string; email: string; password: string; role?: string }) {
-        try {
-            const hashedPassword = await bcrypt.hash(data.password, 10);
-            const user = await User.create({ ...data, password: hashedPassword });
-            console.log("User created:", user.toJSON());
-            return user;
-        } catch (err) {
-            console.error("Error creating user:", err);
-            throw err
-        }
-    }
+  try {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await User.create({
+      firstName: data.firstName,
+      lastName: data.lastName || null,
+      email: data.email,
+      password: hashedPassword,
+      role: data.role || 'user',
+    });
+    console.log("User created:", user.toJSON());
+    return user;
+  } catch (err) {
+    console.error("Error creating user:", err);
+    throw err;
+  }
+}
+
 
   // Get all users
   async getAllUsers() {
