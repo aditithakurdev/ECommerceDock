@@ -1,7 +1,14 @@
 import { DataTypes } from "sequelize";
 import db from "../config/database";
+import { nanoid } from "nanoid";
+import { Roles } from "../utils/enum/userRole";
 
 const User = db.define("User", {
+   id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => nanoid(), 
+  },
   firstName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -20,8 +27,9 @@ const User = db.define("User", {
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM("admin", "user"),
-    defaultValue: "user",
+    type: DataTypes.ENUM(...Object.values(Roles)),
+    allowNull:false,
+    defaultValue: Roles.USER,
   },
   isActive: {
     type: DataTypes.BOOLEAN,

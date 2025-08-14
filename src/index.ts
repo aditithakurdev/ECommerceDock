@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3005;
   try {
     await db.authenticate();
     console.log("Database connected successfully!");
-    await db.sync({ alter: true }); // ✅ creates/updates tables
+    await db.sync({ alter: true }); 
     console.log("Database synced successfully!");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
