@@ -1,37 +1,78 @@
 import User from "../../model/user";
 import bcrypt from "bcrypt"
 import { ErrorMessages } from "../../utils/enum/errorMessages";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { Roles } from "../../utils/enum/userRole";
 
 class UserService {
   // Create a new user
   async createUser(data: { firstName: string; lastName?: string; email: string; password: string; role?: string }) {
-  try {
-    // Destructure data
-    const { firstName, lastName, email, password, role } = data;
+    try {
+      // Destructure data
+      const { firstName, lastName, email, password, role } = data;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { email: email } });
-    if (existingUser) {
-      throw new Error(ErrorMessages.EMAIL_ALREADY_EXISTS);
+      // Check if user already exists
+      const existingUser = await User.findOne({ where: { email: email } });
+      if (existingUser) {
+        throw new Error(ErrorMessages.EMAIL_ALREADY_EXISTS);
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const user = await User.create({
+        ...data,
+        password: hashedPassword,
+        role: data.role as any as User['role'],
+      });
+      console.log("User created:", user.toJSON());
+      return user;
+    } catch (err: any) {
+      console.error("Error creating user:", err.message || err);
+      throw err;
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await User.create({
-      ...data,
-      password: hashedPassword,
-    });
-    console.log("User created:", user.toJSON());
-    return user;
-  } catch (err:any) {
-    console.error("Error creating user:", err.message || err);
-    throw err;
   }
-}
 
+  async loginUser(data: { email: string; password: string }) {
+    try {
+      const { email, password } = data;
 
+      // 1. Find user
+      const user = await User.findOne({
+        where: { email },
+        attributes: ['id', 'name', 'email', 'password'],
+        }); 
+      if (!user) {
+        throw new Error(ErrorMessages.USER_NOT_FOUND );
+      }
+
+      // 2. Get plain object for accessing password
+      const userObj = user.get({ plain: true });
+
+      // 3. Check password
+      const isPasswordValid = await bcrypt.compare(password, userObj.password);
+      if (!isPasswordValid) {
+        throw new Error(ErrorMessages.INVALID_CREDENTIALS || "Invalid credentials");
+      }
+
+      // 4. Generate JWT
+       const expiresIn: SignOptions["expiresIn"] = (process.env.JWT_ACCESS_TOKEN as SignOptions["expiresIn"]) || "24h";
+
+        const token = jwt.sign(
+          { id: userObj.id, email: userObj.email, role: userObj.role },
+          process.env.JWT_SECRET as string,
+          { expiresIn }
+        );
+      // 5. Exclude password
+      const { password: _, ...safeUser } = userObj;
+
+      return { token, user: safeUser };
+    } catch (err: any) {
+      console.error("Error logging in user:", err.message || err);
+      throw err;
+    }
+  }
 
   // Get all users
     async getAllUsers() {
@@ -49,7 +90,7 @@ class UserService {
 
 
   // Get single user by ID
-    async getUserById(id: string) {
+    async getUserProfile(id: string) {
       try {
         const user = await User.findByPk(id, {
           attributes: { exclude: ['password'] } 
@@ -79,9 +120,14 @@ class UserService {
 
         // Update allowed fields only
         const { firstName, lastName, role } = data;
-        await user.update({ firstName, lastName, role });
+       let updateData: any = { firstName, lastName };
 
-        return user;
+      if (role) {
+        // Convert string to Roles enum if necessary
+        updateData.role = Roles[role as keyof typeof Roles] || role;
+      }
+      
+      await user.update(updateData);
       } catch (err: any) {
         console.error("Error updating user:", err.message || err);
         throw err; 
