@@ -1,7 +1,7 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import db from "../config/database";
 import { nanoid } from "nanoid";
-import { Roles } from "../utils/enum/userRole";
+import { RolesEnum } from "../utils/enum/userRole";
 
 
 // Define the attributes
@@ -11,7 +11,7 @@ interface UserAttributes {
   lastName?: string | null;
   email: string;
   password: string;
-  role: Roles;
+  role: RolesEnum;
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -28,7 +28,7 @@ class User extends Model<UserAttributes, UserCreationAttributes>
   public lastName!: string | null;
   public email!: string;
   public password!: string;
-  public role!: Roles;
+  public role!: RolesEnum;
   public isActive!: boolean;
 
   // timestamps
@@ -62,9 +62,9 @@ User.init(
       allowNull: false,
     },
     role: {
-      type: DataTypes.ENUM(...Object.values(Roles)),
+      type: DataTypes.ENUM(...Object.values(RolesEnum)),
       allowNull: false,
-      defaultValue: Roles.USER,
+      defaultValue: RolesEnum.USER,
     },
     isActive: {
       type: DataTypes.BOOLEAN,

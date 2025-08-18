@@ -2,7 +2,7 @@ import User from "../../model/user";
 import bcrypt from "bcrypt"
 import { ErrorMessages } from "../../utils/enum/errorMessages";
 import jwt, { SignOptions } from "jsonwebtoken";
-import { Roles } from "../../utils/enum/userRole";
+import { RolesEnum } from "../../utils/enum/userRole";
 
 class UserService {
   // Create a new user
@@ -41,7 +41,7 @@ class UserService {
       // 1. Find user
       const user = await User.findOne({
         where: { email },
-        attributes: ['id', 'name', 'email', 'password'],
+        attributes: ['id', 'firstName', 'email', 'password'],
         }); 
       if (!user) {
         throw new Error(ErrorMessages.USER_NOT_FOUND );
@@ -124,7 +124,7 @@ class UserService {
 
       if (role) {
         // Convert string to Roles enum if necessary
-        updateData.role = Roles[role as keyof typeof Roles] || role;
+        updateData.role = RolesEnum[role as keyof typeof RolesEnum] || role;
       }
       
       await user.update(updateData);
