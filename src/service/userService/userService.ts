@@ -29,8 +29,8 @@ class UserService {
       console.log("User created:", user.toJSON());
       return user;
     } catch (err: any) {
-      console.error("Error creating user:", err.message || err);
-      throw err;
+      console.error("Error fetching user by ID:", err.message || err);
+      throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -42,9 +42,9 @@ class UserService {
       const user = await User.findOne({
         where: { email },
         attributes: ['id', 'firstName', 'email', 'password'],
-        }); 
+      });
       if (!user) {
-        throw new Error(ErrorMessages.USER_NOT_FOUND );
+        throw new Error(ErrorMessages.USER_NOT_FOUND);
       }
 
       // 2. Get plain object for accessing password
@@ -57,20 +57,21 @@ class UserService {
       }
 
       // 4. Generate JWT
-       const expiresIn: SignOptions["expiresIn"] = (process.env.JWT_ACCESS_TOKEN as SignOptions["expiresIn"]) || "24h";
+      const expiresIn: SignOptions["expiresIn"] = (process.env.JWT_ACCESS_TOKEN as SignOptions["expiresIn"]) || "24h";
 
-        const token = jwt.sign(
-          { id: userObj.id, email: userObj.email, role: userObj.role },
-          process.env.JWT_SECRET as string,
-          { expiresIn }
-        );
+      const token = jwt.sign(
+        { id: userObj.id, email: userObj.email, role: userObj.role },
+        process.env.JWT_SECRET as string,
+        { expiresIn }
+      );
+      console.log(token);
       // 5. Exclude password
       const { password: _, ...safeUser } = userObj;
 
       return { token, user: safeUser };
     } catch (err: any) {
-      console.error("Error logging in user:", err.message || err);
-      throw err;
+      console.error("Error fetching user by ID:", err.message || err);
+      throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -82,10 +83,10 @@ class UserService {
           order: [['createdAt', 'DESC']]
         });
       return users;
-    } catch (err: any) {
-      console.error("Error fetching user:", err.message || err);
-      throw err;
-    }
+   } catch (err: any) {
+        console.error("Error fetching user by ID:", err.message || err);
+        throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
+      }
   }
 
 
@@ -128,9 +129,9 @@ class UserService {
       }
       
       await user.update(updateData);
-      } catch (err: any) {
-        console.error("Error updating user:", err.message || err);
-        throw err; 
+     } catch (err: any) {
+        console.error("Error fetching user by ID:", err.message || err);
+        throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
       }
     }
 
@@ -144,9 +145,9 @@ class UserService {
       await user.destroy();
       return user;
     } catch (err: any) {
-      console.error("Error updating user:", err.message || err);
-      throw err;
-    }
+        console.error("Error fetching user by ID:", err.message || err);
+        throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
+      }
   }    
 }
 
