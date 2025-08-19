@@ -8,7 +8,7 @@ class UserController {
   async createUser(req: Request, res: Response) {
     try {
       const user = await userService.createUser(req.body);
-      const { password, ...userData } = user.toJSON(); // exclude password
+      const { password, ...userData } = user.toJSON(); 
       res.status(201).json({
         message: ResponseMessages.USER_CREATED,
         data: userData,
