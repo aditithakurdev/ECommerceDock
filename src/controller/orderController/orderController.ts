@@ -2,12 +2,12 @@ import { ErrorMessages } from "../../utils/enum/errorMessages";
 import { ResponseMessages } from "../../utils/enum/responseMessages";
 import { Request, Response } from "express";
 import orderService from "../../service/orderService/orderService";
+import { OrderEnum } from "../../utils/enum/order";
 
 
 class OrderController {
-    // Create a new user
+    // Create a new order
     async createOrder(req: Request, res: Response) {
-       console.log("req",req)
     try {
         const { totalAmt, status } = req.body;
 
@@ -23,17 +23,17 @@ class OrderController {
             userId = (req.user as any).id;
         }
         if (!userId) {
-            return res.status(401).json({ message: "Unauthorized: User info missing" });
+            return res.status(401).json({ message: ErrorMessages.USER_NOT_FOUND });
         }
 
         const order = await orderService.createOrder({
             totalAmt,
-            status: status || "pending",
-            userId, // store logged-in user ID
+            status: OrderEnum.PENDING,
+            userId, 
         });
 
         return res.status(201).json({
-            message: "Order created successfully",
+            message:ResponseMessages.ORDER_CREATED,
             order,
         });
     } catch (err: any) {
