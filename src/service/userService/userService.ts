@@ -53,13 +53,13 @@ class UserService {
       }
 
       // 4. Generate JWT
-      const expiresIn: SignOptions["expiresIn"] = (process.env.JWT_ACCESS_TOKEN as SignOptions["expiresIn"]) || "24h";
+      const expiresIn = process.env.JWT_ACCESS_TOKEN as SignOptions["expiresIn"];
 
       // include role in token
       const token = jwt.sign(
         { id: user.id, role: user.role }, 
         process.env.JWT_SECRET!,
-        { expiresIn: "1d" }
+        { expiresIn }
       );
       return { token, user };
     } catch (err: any) {
