@@ -6,6 +6,12 @@ export enum ResponseMessages {
   USER_DELETED = "User deleted successfully",
   LOGIN_SUCCESS = "User login successfully",
   
-  //
-  ORDER_CREATED = "Order created successfully"
+  //ORDER
+  ORDER_CREATED = "Order created successfully",
+
+  //PRODUCT
+  PRODUCT_CREATED = "Product created successfully",
+  PPRODUCT_DELETED = "Product deleted successfully",
+  PRODUCT_FETCHED = "Product fetched successfully",
+  PRODUCT_UPDATED = "Product updated successfully",
 }

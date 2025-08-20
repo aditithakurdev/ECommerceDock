@@ -51,8 +51,11 @@ class OrderController {
       const orders = await orderService.getUserOrders(userId);
       return res.json({ success: true, data: orders });
     } catch (err: any) {
-        console.error("Error fetching user by ID:", err.message || err);
-        throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
+      console.error(err);
+      return res.status(500).json({
+        message:ErrorMessages.INTERNAL_SERVER_ERROR,
+        error: err.message
+      });
     }
   }
 

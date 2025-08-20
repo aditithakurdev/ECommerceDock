@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import './config/database';
 import db from './config/database';
-import { userRouter, orderRouter } from "./routes/routes";
+import { userRouter, orderRouter, productRouter } from "./routes/routes";
 dotenv.config();
 console.log("Main app starting...");
 
@@ -34,6 +34,7 @@ const PORT = process.env.PORT || 3005;
 // API Routes
 app.use("/api/users", userRouter);
 app.use("/api/orders", orderRouter);
+app.use('/api/products', productRouter )
 
 app.get("/", (req, res) => {
   res.send("Hello from Node + TS + PostgreSQL!");
