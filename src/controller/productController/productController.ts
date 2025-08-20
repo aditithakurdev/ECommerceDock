@@ -8,26 +8,23 @@ import { StatusCodeEnum } from "../../utils/enum/ststusCodeEnum";
 
 class ProductController {
     // Create a new Product
-   async createProduct(req: Request, res: Response) {
+  async createProduct(req: Request, res: Response) {
     try {
-      const product = await productService.createProduct(req.body);
-        res.status(StatusCodeEnum.OK).json({
-            message:ResponseMessages.PRODUCT_CREATED,
-            data: product
-        });
-   } catch (err: any) {
+      const result = await productService.createProduct(req.body);
+      res.status(201).json(result);
+    } catch (err: any) {
       console.error(err);
       return res.status(500).json({
-        message:ErrorMessages.INTERNAL_SERVER_ERROR,
+        message: ErrorMessages.INTERNAL_SERVER_ERROR,
         error: err.message
       });
     }
   }
 
   async getAllProducts(req: Request, res: Response) {
-    try {
-      const products = await productService.getAllProducts();
-      res.json(products);
+  try {
+      const result = await productService.getAllProducts(req.query);
+      res.json(result);
     } catch (err: any) {
       console.error(err);
       return res.status(500).json({
@@ -35,29 +32,13 @@ class ProductController {
         error: err.message
       });
     }
-  }
+  };
 
   async getProductById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const product = await productService.getProductById(id);
-      if (!product) return res.status(404).json({ message: ErrorMessages.PRODUCT_NOT_FOUND});
-      res.json(product);
-   } catch (err: any) {
-      console.error(err);
-      return res.status(500).json({
-        message:ErrorMessages.INTERNAL_SERVER_ERROR,
-        error: err.message
-      });
-    }
-  }
-
-  async updateProduct(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const product = await productService.updateProduct(id, req.body);
-      if (!product) return res.status(404).json({ message: ErrorMessages.PRODUCT_NOT_FOUND});
-      res.json(product);
+      const result = await productService.getProductById(req.params.id);
+      if (!result) return res.status(404).json({ message: "Product not found" });
+      res.json(result);
     } catch (err: any) {
       console.error(err);
       return res.status(500).json({
@@ -66,13 +47,11 @@ class ProductController {
       });
     }
   }
-
-  async deleteProduct(req: Request, res: Response) {
+  async updateProduct(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const product = await productService.deleteProduct(id);
-      if (!product) return res.status(404).json({ message: ErrorMessages.PRODUCT_NOT_FOUND});
-      res.json({ message: ResponseMessages.PPRODUCT_DELETED });
+      const result = await productService.updateProduct(req.params.id, req.body);
+      if (!result) return res.status(404).json({ message: "Product not found" });
+      res.json(result);
    } catch (err: any) {
       console.error(err);
       return res.status(500).json({
@@ -80,7 +59,21 @@ class ProductController {
         error: err.message
       });
     }
-  }
+  };
+
+  async deleteProduct(req: Request, res: Response) {
+     try {
+      const result = await productService.deleteProduct(req.params.id);
+      if (!result) return res.status(404).json({ message: "Product not found" });
+      res.json({ message: "Product deleted successfully" });
+   } catch (err: any) {
+      console.error(err);
+      return res.status(500).json({
+        message:ErrorMessages.INTERNAL_SERVER_ERROR,
+        error: err.message
+      });
+    }
+  };
 
 
 }
