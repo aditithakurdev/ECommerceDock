@@ -40,35 +40,28 @@ class UserService {
 
       // 1. Find user
       const user = await User.findOne({
-        where: { email },
-        attributes: ['id', 'firstName', 'email', 'password'],
+        where: { email }
       });
       if (!user) {
         throw new Error(ErrorMessages.USER_NOT_FOUND);
       }
 
-      // 2. Get plain object for accessing password
-      const userObj = user.get({ plain: true });
-
       // 3. Check password
-      const isPasswordValid = await bcrypt.compare(password, userObj.password);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        throw new Error(ErrorMessages.INVALID_CREDENTIALS || "Invalid credentials");
+        throw new Error(ErrorMessages.INVALID_CREDENTIALS);
       }
 
       // 4. Generate JWT
       const expiresIn: SignOptions["expiresIn"] = (process.env.JWT_ACCESS_TOKEN as SignOptions["expiresIn"]) || "24h";
 
+      // include role in token
       const token = jwt.sign(
-        { id: userObj.id, email: userObj.email, role: userObj.role },
-        process.env.JWT_SECRET as string,
-        { expiresIn }
+        { id: user.id, role: user.role }, 
+        process.env.JWT_SECRET!,
+        { expiresIn: "1d" }
       );
-      console.log(token);
-      // 5. Exclude password
-      const { password: _, ...safeUser } = userObj;
-
-      return { token, user: safeUser };
+      return { token, user };
     } catch (err: any) {
       console.error("Error fetching user by ID:", err.message || err);
       throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
