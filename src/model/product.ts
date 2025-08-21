@@ -1,6 +1,7 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import db from "../config/database";
 import { nanoid } from "nanoid";
+import Category from "./category";
 
 // Define attributes
 interface ProductAttributes {
@@ -62,7 +63,7 @@ Product.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false, // default is false
+      defaultValue: false, 
     },
   },
   {
