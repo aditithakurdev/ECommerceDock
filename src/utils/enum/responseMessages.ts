@@ -11,7 +11,7 @@ export enum ResponseMessages {
 
   //PRODUCT
   PRODUCT_CREATED = "Product created successfully",
-  PPRODUCT_DELETED = "Product deleted successfully",
+  PRODUCT_DELETED = "Product deleted successfully",
   PRODUCT_FETCHED = "Product fetched successfully",
   PRODUCT_UPDATED = "Product updated successfully",
 }

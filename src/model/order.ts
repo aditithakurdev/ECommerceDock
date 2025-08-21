@@ -9,6 +9,7 @@ interface OrderAttributes {
   totalAmt: number;
   status: string;
   userId: string; // foreign key -> User.id
+  isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -26,6 +27,7 @@ class Order
   public totalAmt!: number;
   public status!: string;
   public userId!: string;
+  public isDeleted!: boolean;
 
   // timestamps
   public readonly createdAt!: Date;
@@ -47,6 +49,11 @@ Order.init(
     status: {
       type: DataTypes.STRING,
       defaultValue: "pending",
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false, // default is false
     },
     userId: {
       type: DataTypes.STRING,

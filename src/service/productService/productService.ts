@@ -57,16 +57,20 @@ class ProductService {
   }
 
   async deleteProduct(id: string) {
-    try {
-      const product = await Product.findByPk(id);
-      if (!product) return null;
-      await product.destroy();
-      return product;
+  try {
+    const product = await Product.findByPk(id);
+    if (!product) return null;
 
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    // Soft delete: just update the isDeleted flag
+    product.isDeleted = true;
+    await product.save();
+
+    return product;
+  } catch (error: any) {
+    throw new Error(error.message);
   }
+}
+
 }
 
 export default new ProductService();

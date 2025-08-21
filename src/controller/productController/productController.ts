@@ -2,9 +2,6 @@ import { Request, Response } from "express";
 import productService from "../../service/productService/productService";
 import { ErrorMessages } from "../../utils/enum/errorMessages";
 import { ResponseMessages } from "../../utils/enum/responseMessages";
-import { StatusCodeEnum } from "../../utils/enum/ststusCodeEnum";
-
-
 
 class ProductController {
     // Create a new Product
@@ -37,7 +34,7 @@ class ProductController {
   async getProductById(req: Request, res: Response) {
     try {
       const result = await productService.getProductById(req.params.id);
-      if (!result) return res.status(404).json({ message: "Product not found" });
+      if (!result) return res.status(404).json({ message: ErrorMessages.PRODUCT_NOT_FOUND });
       res.json(result);
     } catch (err: any) {
       console.error(err);
@@ -50,7 +47,7 @@ class ProductController {
   async updateProduct(req: Request, res: Response) {
     try {
       const result = await productService.updateProduct(req.params.id, req.body);
-      if (!result) return res.status(404).json({ message: "Product not found" });
+      if (!result) return res.status(404).json({ message: ErrorMessages.PRODUCT_NOT_FOUND });
       res.json(result);
    } catch (err: any) {
       console.error(err);
@@ -64,8 +61,8 @@ class ProductController {
   async deleteProduct(req: Request, res: Response) {
      try {
       const result = await productService.deleteProduct(req.params.id);
-      if (!result) return res.status(404).json({ message: "Product not found" });
-      res.json({ message: "Product deleted successfully" });
+      if (!result) return res.status(404).json({ message: ErrorMessages.PRODUCT_NOT_FOUND });
+      res.json({ message: ResponseMessages.PRODUCT_DELETED });
    } catch (err: any) {
       console.error(err);
       return res.status(500).json({
@@ -74,8 +71,6 @@ class ProductController {
       });
     }
   };
-
-
 }
     
 export default new ProductController();

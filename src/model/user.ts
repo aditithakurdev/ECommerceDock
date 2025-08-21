@@ -13,6 +13,7 @@ interface UserAttributes {
   password: string;
   role: RolesEnum;
   isActive: boolean;
+  isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,6 +31,7 @@ class User extends Model<UserAttributes, UserCreationAttributes>
   public password!: string;
   public role!: RolesEnum;
   public isActive!: boolean;
+  public isDeleted!: boolean;
 
   // timestamps
   public readonly createdAt!: Date;
@@ -69,6 +71,11 @@ User.init(
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false, // default is false
     },
   },{
     sequelize: db,
