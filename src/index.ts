@@ -2,10 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import './config/database';
 import db from './config/database';
-import { userRouter, orderRouter, productRouter } from "./routes/routes";
+// import { userRouter, orderRouter, productRouter, categoryRouter } from "./routes/routes";
+import { setupAssociations } from "./model/associations";
 dotenv.config();
 console.log("Main app starting...");
-
+import apiRoutes from './routes/routes'
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
@@ -31,11 +32,15 @@ const PORT = process.env.PORT || 3005;
   }
 })();
 
+setupAssociations();
 // API Routes
-app.use("/api/users", userRouter);
-app.use("/api/orders", orderRouter);
-app.use('/api/products', productRouter )
+// app.use("/api/users", userRouter);
+// app.use("/api/orders", orderRouter);
+// app.use('/api/products', productRouter)
+// app.use('/api/category', categoryRouter)
 
+// All API routes prefixed with /api
+app.use('/api', apiRoutes);
 app.get("/", (req, res) => {
   res.send("Hello from Node + TS + PostgreSQL!");
 });
@@ -43,3 +48,4 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+

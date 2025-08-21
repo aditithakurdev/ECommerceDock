@@ -1,22 +1,22 @@
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth";
 import userController from "../controller/userController/userController";
-const userRouter = Router();
+const router = Router();
 
-userRouter.post("/", userController.createUser)
+router.post("/", userController.createUser)
 
-userRouter.post("/login",userController.login)
+router.post("/login",userController.login)
 
 // Get all users
-userRouter.get("/", userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 
 // Get a single user by ID
-userRouter.get("/:id", authenticateToken, userController.getUserProfile);
+router.get("/:id", authenticateToken, userController.getUserProfile);
 
 // Update a user by ID
-userRouter.patch("/:id", userController.updateUser);
+router.patch("/:id", userController.updateUser);
 
 // Delete a user by ID
-userRouter.delete("/:id", userController.deleteUser);
+router.delete("/:id", userController.deleteUser);
 
-export default userRouter;
+export default router;

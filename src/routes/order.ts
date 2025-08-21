@@ -2,14 +2,14 @@ import { Router } from "express";
 import { orderController } from "../controller";
 import { authenticateToken } from "../middleware/auth";
 
-const orderRouter = Router();
+const router = Router();
 
-orderRouter.post("/create", authenticateToken, orderController.createOrder);
+router.post("/create", authenticateToken, orderController.createOrder);
 
 // User → get their own orders
-orderRouter.get("/my-orders", authenticateToken, orderController.getUserOrders);
+router.get("/my-orders", authenticateToken, orderController.getUserOrders);
 
 // Admin → get all orders
-orderRouter.get("/all-orders", authenticateToken, orderController.getAllOrders);
+router.get("/all-orders", authenticateToken, orderController.getAllOrders);
 
-export default orderRouter;
+export default router;
