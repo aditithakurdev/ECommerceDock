@@ -9,12 +9,13 @@ interface ProductAttributes {
     description?: string | null;
     price: number;
     stock: number;
+    isDeleted: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
 // Define which fields are optional on creation
-interface ProductCreationAttributes extends Optional<ProductAttributes, "id" | "description" | "createdAt" | "updatedAt"> {}
+interface ProductCreationAttributes extends Optional<ProductAttributes, "id" | "description" | "isDeleted" |"createdAt" | "updatedAt"> {}
 
 // Define the class
 class Product
@@ -26,6 +27,7 @@ class Product
     public description?: string | null;
     public price!: number;
     public stock!: number;
+    public isDeleted!: boolean;
     
     // timestamps
     public readonly createdAt!: Date;
@@ -56,6 +58,11 @@ Product.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false, // default is false
     },
   },
   {
