@@ -7,4 +7,8 @@ export enum ErrorMessages {
 
   //PPRODUCT
   PRODUCT_NOT_FOUND = "Product not found",
+
+  //INVENTORY
+  INVENTORY_NOT_FOUND = "Inventory not found",
+  INSUFFICIENT_STOCK= "Insufficient stock",
 }
