@@ -57,7 +57,7 @@ Category.init(
   },
   {
     sequelize,
-    tableName: 'Categories',
+    tableName: 'categories',
     timestamps: true,
   }
 );

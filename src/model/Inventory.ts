@@ -5,7 +5,7 @@ import db from '../config/database';
 
 interface InventoryAttributes {
     id: string;
-    productId: number;
+    productId: string;
     quantity: number;
     stock: number;
     warehouseLocation?: string;
@@ -22,7 +22,7 @@ class Inventory
     implements InventoryAttributes
 {
   public id!: string;
-  public productId!: number;
+  public productId!: string;
   public quantity!: number;
   public stock!: number;
   public warehouseLocation?: string;
@@ -36,7 +36,7 @@ class Inventory
 Inventory.init(
   {
     id: { type: DataTypes.STRING, primaryKey: true, defaultValue: () => nanoid() },
-    productId: { type: DataTypes.INTEGER, allowNull: false },
+    productId: { type: DataTypes.STRING, allowNull: false },
     quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     warehouseLocation: { type: DataTypes.STRING, allowNull: true },
