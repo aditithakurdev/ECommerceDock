@@ -42,7 +42,6 @@ class InventoryController {
 
             return res.json(updatedInventory);
         } catch (err: any) {
-            console.error("Error updating inventory:", err);
             return res.status(500).json({
             message: ErrorMessages.INTERNAL_SERVER_ERROR,
             error: err.message || err,
@@ -62,7 +61,6 @@ class InventoryController {
     }
     return res.json({ success: true, data: inventory });
   } catch (err: any) {
-    console.error("Error fetching inventory by ID:", err);
     return res.status(500).json({
       message: ErrorMessages.INTERNAL_SERVER_ERROR,
       error: err.message || err,
@@ -76,7 +74,7 @@ class InventoryController {
     const { amount } = req.body; // expecting { "amount": 5 }
 
     if (typeof amount !== "number" || amount <= 0) {
-      return res.status(400).json({ message: "Amount must be a positive number" });
+      return res.status(400).json({ message: ErrorMessages.AMOUNT_MUST_BE_NUMBER });
     }
 
     const inventory = await inventoryService.increaseStock(id, amount);
@@ -123,7 +121,6 @@ class InventoryController {
 
         return res.json({ message: ResponseMessages.INVENTORY_DELETED });
     } catch (err: any) {
-        console.error("Error deleting inventory:", err);
         return res.status(500).json({
         message: ErrorMessages.INTERNAL_SERVER_ERROR,
         error: err.message || err,

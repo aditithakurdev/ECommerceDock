@@ -10,5 +10,6 @@ export enum ErrorMessages {
 
   //INVENTORY
   INVENTORY_NOT_FOUND = "Inventory not found",
-  INSUFFICIENT_STOCK= "Insufficient stock",
+  INSUFFICIENT_STOCK = "Insufficient stock",
+  AMOUNT_MUST_BE_NUMBER = "Amount must be a positive number",
 }
