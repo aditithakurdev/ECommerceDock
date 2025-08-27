@@ -3,7 +3,6 @@ import { ResponseMessages } from "../../utils/enum/responseMessages";
 import { Request, Response } from "express";
 import orderService from "../../service/orderService/orderService";
 import { OrderEnum } from "../../utils/enum/order";
-import { Order } from "../../model/index";
 import { RolesEnum } from "../../utils/enum/userRole";
 
 
@@ -34,13 +33,17 @@ class OrderController {
                 userId,
             });
 
-            return res.status(201).json({
-                message: ResponseMessages.ORDER_CREATED,
-                order,
+          return res.status(201).json({
+              success:true,
+              message: ResponseMessages.ORDER_CREATED,
+              data: order,
             });
         } catch (err: any) {
-        console.error("Error fetching user by ID:", err.message || err);
-        throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
+          console.error(err);
+         return res.status(500).json({
+         message:ErrorMessages.INTERNAL_SERVER_ERROR,
+          error: err.message
+      });
       }
     }
     
@@ -49,15 +52,15 @@ class OrderController {
     try {
       const userId = (req as any).user.id;
       const orders = await orderService.getUserOrders(userId);
-      return res.json({ success: true, data: orders });
-    } catch (err: any) {
-      console.error(err);
-      return res.status(500).json({
-        message:ErrorMessages.INTERNAL_SERVER_ERROR,
-        error: err.message
+      return res.json({ success: true, message:ResponseMessages.ORDER_FETCHED,data: orders });
+   } catch (err: any) {
+          console.error(err);
+         return res.status(500).json({
+         message:ErrorMessages.INTERNAL_SERVER_ERROR,
+          error: err.message
       });
+      }
     }
-  }
 
   // Fetch all orders (Admin only)
     async getAllOrders(req: Request, res: Response) {
@@ -66,16 +69,20 @@ class OrderController {
 
       // Allow only SUPERADMIN or ADMIN
       if (userRole !== RolesEnum.SUPERADMIN && userRole !== RolesEnum.ADMIN) {
-        return res.status(403).json({ success: false, message: "Access denied" });
+        return res.status(403).json({ success: false, message: ResponseMessages.ACCESS_DENIED });
       }
 
       const orders = await orderService.getAllOrders();
-      return res.json({ success: true, data: orders });
-    } catch (err: any) {
-      console.error("Error fetching all orders:", err.message || err);
-      return res.status(500).json({ success: false, message: ErrorMessages.INTERNAL_SERVER_ERROR });
+      return res.json({ success: true, message:ResponseMessages.ORDER_FETCHED_SUCCESS,data: orders });
+   } catch (err: any) {
+          console.error(err);
+         return res.status(500).json({
+         message:ErrorMessages.INTERNAL_SERVER_ERROR,
+          error: err.message
+      });
+      }
     }
-  }
 }
     
+
 export default new OrderController();

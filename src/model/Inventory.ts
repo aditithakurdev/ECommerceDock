@@ -44,7 +44,7 @@ Inventory.init(
   },
   {
     sequelize: db,
-    tableName: "Inventories",
+    tableName: "inventories",
     timestamps: true,
   }
 );

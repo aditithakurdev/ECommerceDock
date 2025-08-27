@@ -8,7 +8,7 @@ class InventoryController {
   async createInventory(req: Request, res: Response) {
       try {
           const inventory = await inventoryService.addOrUpdateInventory(req.body);
-          res.status(201).json(inventory);
+        res.status(201).json({ success: true, message: ResponseMessages.INVENTORY_CREATED, data: inventory });
       } catch (err: any) {
           console.error(err);
           return res.status(500).json({
@@ -21,7 +21,7 @@ class InventoryController {
   async getAllInventories(req: Request, res: Response) {
       try {
           const inventories = await inventoryService.getAllInventories();
-          res.json(inventories);
+        res.json({ success: true, message: ResponseMessages.INVENTORY_FETCHED, data: inventories });
       } catch (err: any) {
           console.error(err);
           return res.status(500).json({
@@ -40,7 +40,7 @@ class InventoryController {
             return res.status(404).json({ message: ErrorMessages.INVENTORY_NOT_FOUND });
             }
 
-            return res.json(updatedInventory);
+          return res.json({  success: true,message: ResponseMessages.INVENTORY_UPDATED, data: updatedInventory });
         } catch (err: any) {
             return res.status(500).json({
             message: ErrorMessages.INTERNAL_SERVER_ERROR,
@@ -50,23 +50,23 @@ class InventoryController {
     }
 
   async getInventoryById(req: Request, res: Response) {
-  try {
-    const { id } = req.params; 
-    const inventory = await inventoryService.getInventoryById(id);
-    
-    if (!inventory) {
-      return res.status(404).json({
-        message: ErrorMessages.INVENTORY_NOT_FOUND,
+    try {
+      const { id } = req.params; 
+      const inventory = await inventoryService.getInventoryById(id);
+      
+      if (!inventory) {
+        return res.status(404).json({
+          message: ErrorMessages.INVENTORY_NOT_FOUND,
+        });
+      }
+      return res.json({ success: true, messgae:ResponseMessages.INVENTORY_FETCHED, data: inventory });
+    } catch (err: any) {
+      return res.status(500).json({
+        message: ErrorMessages.INTERNAL_SERVER_ERROR,
+        error: err.message || err,
       });
     }
-    return res.json({ success: true, data: inventory });
-  } catch (err: any) {
-    return res.status(500).json({
-      message: ErrorMessages.INTERNAL_SERVER_ERROR,
-      error: err.message || err,
-    });
   }
-}
 
  async increaseStock(req: Request, res: Response) {
   try {
@@ -83,7 +83,7 @@ class InventoryController {
       return res.status(404).json({ message: ErrorMessages.INVENTORY_NOT_FOUND });
     }
 
-    res.json({ message: ResponseMessages.INVENTORY_INCREASE });
+    res.json({ success:true, message: ResponseMessages.INVENTORY_INCREASE });
    } catch (err: any) {
         console.error(err);
         return res.status(500).json({
@@ -100,7 +100,7 @@ class InventoryController {
           
           const inventory = await inventoryService.decreaseStock(id, amount);
           if (!inventory) return res.status(404).json(ErrorMessages.INVENTORY_NOT_FOUND);
-          res.json({ message: ResponseMessages.INVENTORY_DECREASE })
+          res.json({success:true, message: ResponseMessages.INVENTORY_DECREASE })
       } catch (err: any) {
           console.error(err);
           return res.status(500).json({
@@ -119,7 +119,7 @@ class InventoryController {
         return res.status(404).json({ message: ErrorMessages.INVENTORY_NOT_FOUND });
         }
 
-        return res.json({ message: ResponseMessages.INVENTORY_DELETED });
+        return res.json({ success:true, message: ResponseMessages.INVENTORY_DELETED });
     } catch (err: any) {
         return res.status(500).json({
         message: ErrorMessages.INTERNAL_SERVER_ERROR,
