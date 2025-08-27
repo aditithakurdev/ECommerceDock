@@ -1,4 +1,5 @@
 import Category from "../../model/category";
+import Product from "../../model/product";
 import { ErrorMessages } from "../../utils/enum/errorMessages";
 
 class CategoryService {
@@ -11,8 +12,20 @@ class CategoryService {
 
   // Get all categories (excluding soft-deleted)
   async getAllCategories() {
-    return await Category.findAll({ where: { isDeleted: false } });
-  }
+  return await Category.findAll({
+    where: { isDeleted: false },
+    include: [
+      {
+        model: Product,
+        as: "products", 
+        where: { isDeleted: false },
+        required: false, 
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+}
+
 
   // Get single category by id
  async getCategoryById(id: string) {

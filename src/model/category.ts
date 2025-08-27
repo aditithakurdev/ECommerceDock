@@ -1,8 +1,6 @@
 // models/Category.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
-import Product from './product';
-import db from '../config/database';
 import { nanoid } from 'nanoid';
 
 interface CategoryAttributes {

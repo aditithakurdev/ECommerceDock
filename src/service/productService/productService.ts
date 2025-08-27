@@ -1,42 +1,55 @@
 import { Op } from "sequelize";
 import Product from "../../model/product";
+import Category from "../../model/category";
 
 class ProductService {
-    async createProduct(data: any) {
+   async createProduct(data: { name: string; categoryId: string; description?: string; price?: number; stock?: number }) {
     try {
-      return await Product.create(data);
+      const product = await Product.create({
+        name: data.name,
+        categoryId: data.categoryId,   // directly use from payload
+        description: data.description ?? null,
+        price: data.price ?? 0,
+        stock: data.stock ?? 0,
+      });
+      return product;
     } catch (error: any) {
       throw new Error(error.message);
     }
   }
 
  async getAllProducts(query: any) {
-    const { name, page = 1, limit = 10 } = query;
+  const { name, page = 1, limit = 10 } = query;
 
-    const offset = (Number(page) - 1) * Number(limit);
+  const offset = (Number(page) - 1) * Number(limit);
 
-    const where: any = {};
-    if (name) {
-      where.name = { [Op.like]: `%${name}%` };
-    }
-
-    const { rows, count } = await Product.findAndCountAll({
-      where,
-      limit: Number(limit),
-      offset,
-      order: [["createdAt", "DESC"]],
-    });
-
-   return {
-      data: rows,
-      total: count,
-      page: Number(page),
-      pageSize: Number(limit),
-      totalPages: Math.ceil(count / Number(limit)),
-     
-    };
+  const where: any = {};
+  if (name) {
+    where.name = { [Op.like]: `%${name}%` };
   }
 
+  const { rows, count } = await Product.findAndCountAll({
+    where,
+    limit: Number(limit),
+    offset,
+    order: [["createdAt", "DESC"]],
+    include: [
+      {
+        model: Category,
+        as: "category", 
+        attributes: ["id", "name"], 
+      },
+    ],
+  });
+
+  return {
+    data: rows,
+    total: count,
+    page: Number(page),
+    pageSize: Number(limit),
+    totalPages: Math.ceil(count / Number(limit)),
+  };
+}
   async getProductById(id: string) {
     try {
       return await Product.findByPk(id);
