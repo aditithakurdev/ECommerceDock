@@ -4,34 +4,37 @@ import { nanoid } from "nanoid";
 
 // Define attributes
 interface ProductAttributes {
-    id: string;
-    name: string;
-    description?: string | null;
-    price: number;
-    stock: number;
-    isDeleted: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  stock: number;
+  isDeleted: boolean;
+  categoryId: string;  
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Define which fields are optional on creation
-interface ProductCreationAttributes extends Optional<ProductAttributes, "id" | "description" | "isDeleted" |"createdAt" | "updatedAt"> {}
+interface ProductCreationAttributes
+  extends Optional<ProductAttributes, "id" | "description" | "isDeleted" | "createdAt" | "updatedAt"> {}
 
 // Define the class
 class Product
   extends Model<ProductAttributes, ProductCreationAttributes>
   implements ProductAttributes
 {
-    public id!: string;
-    public name!: string;
-    public description?: string | null;
-    public price!: number;
-    public stock!: number;
-    public isDeleted!: boolean;
-    
-    // timestamps
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+  public id!: string;
+  public name!: string;
+  public description?: string | null;
+  public price!: number;
+  public stock!: number;
+  public isDeleted!: boolean;
+  public categoryId!: string;   
+
+  // timestamps
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 // Init schema
@@ -45,10 +48,10 @@ Product.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-        },
+    },
     description: {
-        type: DataTypes.STRING,
-        allowNull:true,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     price: {
       type: DataTypes.FLOAT,
@@ -62,7 +65,16 @@ Product.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false, 
+      defaultValue: false,
+    },
+    categoryId: {                    
+      type: DataTypes.STRING,
+      allowNull: false,
+      references: {
+        model: "categories",          
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
   },
   {
