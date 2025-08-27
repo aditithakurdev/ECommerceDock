@@ -18,5 +18,9 @@ export enum ResponseMessages {
   //Inventory 
   INVENTORY_INCREASE = "Inventory increased successfully",
   INVENTORY_DECREASE = "Inventory decreased successfully",
-  INVENTORY_DELETED = "Inventory deleted successfully"
+  INVENTORY_DELETED = "Inventory deleted successfully",
+
+
+  //CATEGORY
+  CATEGORY_DELETED = "Category deleted successfully"
 }
