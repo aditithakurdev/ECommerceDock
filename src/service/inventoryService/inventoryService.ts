@@ -38,7 +38,6 @@ class InventoryService {
         return { inventory: newInventory, created: true };
       }
     } catch (err: any) {
-      console.error("Error adding/updating inventory:", err.message || err);
       throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
@@ -47,7 +46,6 @@ class InventoryService {
     try {
       return await Inventory.findAll({ where: { isDeleted: false } });
     } catch (err: any) {
-      console.error("Error fetching inventories:", err.message || err);
       throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
@@ -58,7 +56,6 @@ class InventoryService {
       if (!inventory) return null;
       return await inventory.update(data);
     } catch (err: any) {
-      console.error("Error updating inventory:", err.message || err);
       throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
@@ -67,12 +64,9 @@ class InventoryService {
       const inventory = await Inventory.findByPk(id);
       return inventory;
     } catch (err: any) {
-      console.error("Error fetching inventory by ID:", err.message || err);
       throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
-
-  
 
   /**
    * Increase stock (when you restock)
@@ -88,7 +82,6 @@ class InventoryService {
 
     return await inventory.save();
   } catch (err: any) {
-    console.error("Error increasing stock:", err.message || err);
     throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
   }
 }
@@ -109,7 +102,6 @@ class InventoryService {
       inventory.stock -= amount; // reduce only stock, not quantity
       return await inventory.save();
     } catch (err: any) {
-      console.error("Error decreasing stock:", err.message || err);
       throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
     }
   }
@@ -126,7 +118,6 @@ class InventoryService {
     inventory.isDeleted = true;
     return await inventory.save();
   } catch (err: any) {
-    console.error("Error deleting inventory:", err.message || err);
     throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
   }
 }
