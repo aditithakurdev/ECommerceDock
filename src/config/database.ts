@@ -11,8 +11,9 @@ const db = new Sequelize(
   {
     host: process.env.DB_HOST!,              // correct env variable
     port:Number(process.env.DB_PORT),       // convert port to number
-    dialect: "postgres",                     // correct spelling
-    logging: console.log,                           // optional: disable SQL logging
+    dialect: "postgres",
+    logging:false,
+    // logging: console.log,                           // optional: disable SQL logging
   }
 );
 

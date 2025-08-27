@@ -8,7 +8,7 @@ class UserController {
   async createUser(req: Request, res: Response) {
     try {
       const user = await userService.createUser(req.body);
-      const { password, ...userData } = user.toJSON(); // exclude password
+      const { password, ...userData } = user.toJSON(); 
       res.status(201).json({
         message: ResponseMessages.USER_CREATED,
         data: userData,
@@ -22,6 +22,36 @@ class UserController {
     }
   }
 
+  async login(req: Request, res: Response) {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          message: ErrorMessages.EMAIL_PASSWORD_REQUIRED,
+        });
+      }
+
+      const { token, user } = await userService.loginUser({ email, password });
+
+      return res.status(200).json({
+        message: ResponseMessages.LOGIN_SUCCESS,
+        data: {
+          token,
+          user: {
+            id: user.id,
+            role: user.role,
+          },
+        },
+      });
+    } catch (err: any) {
+      console.error(err);
+      return res.status(401).json({
+        message: ErrorMessages.INVALID_CREDENTIALS,
+        error: err.message,
+      });
+    }
+  }
   // Get all users
   async getAllUsers(req: Request, res: Response) {
     try {
@@ -40,10 +70,10 @@ class UserController {
   }
 
   // Get user by ID
-  async getUserById(req: Request, res: Response) {
+  async getUserProfile(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const user = await userService.getUserById(id);
+      const user = await userService.getUserProfile(id);
 
       if (!user) {
         return res.status(404).json({
