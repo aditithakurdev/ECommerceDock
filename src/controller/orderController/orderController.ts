@@ -4,48 +4,49 @@ import { Request, Response } from "express";
 import orderService from "../../service/orderService/orderService";
 import { OrderEnum } from "../../utils/enum/order";
 import { RolesEnum } from "../../utils/enum/userRole";
+import stripeService from "../../service/StripeService/stripeService";
 
 
 class OrderController {
     // Create a new order
-    async createOrder(req: Request, res: Response) {
-        try {
-            const { totalAmt, status } = req.body;
+    // async create(req: Request, res: Response) {
+    //     try {
+    //         const { totalAmt, status } = req.body;
 
-            if (!totalAmt) {
-                return res.status(400).json({ message: "Total amount is required." });
-            }
+    //         if (!totalAmt) {
+    //             return res.status(400).json({ message: "Total amount is required." });
+    //         }
 
-            // JWT middleware ensures req.user exists
-            let userId: string | undefined;
-            if (typeof req.user === "string") {
-                userId = req.user;
-            } else if (req.user && typeof req.user === "object" && "id" in req.user) {
-                userId = (req.user as any).id;
-            }
-            if (!userId) {
-                return res.status(401).json({ message: ErrorMessages.USER_NOT_FOUND });
-            }
+    //         // JWT middleware ensures req.user exists
+    //         let userId;
+    //         if (typeof req.user === "string") {
+    //             userId = req.user;
+    //         } else if (req.user && typeof req.user === "object" && "id" in req.user) {
+    //             userId = (req.user as any).id;
+    //         }
+    //         if (!userId) {
+    //             return res.status(401).json({ message: ErrorMessages.USER_NOT_FOUND });
+    //         }
 
-            const order = await orderService.createOrder({
-                totalAmt,
-                status: OrderEnum.PENDING,
-                userId,
-            });
+    //         const order = await orderService.createOrder({
+    //             totalAmt,
+    //             status: OrderEnum.PENDING,
+    //             userId,
+    //         });
 
-          return res.status(201).json({
-              success:true,
-              message: ResponseMessages.ORDER_CREATED,
-              data: order,
-            });
-        } catch (err: any) {
-          console.error(err);
-         return res.status(500).json({
-         message:ErrorMessages.INTERNAL_SERVER_ERROR,
-          error: err.message
-      });
-      }
-    }
+    //       return res.status(201).json({
+    //           success:true,
+    //           message: ResponseMessages.ORDER_CREATED,
+    //           data: order,
+    //         });
+    //     } catch (err: any) {
+    //       console.error(err);
+    //      return res.status(500).json({
+    //      message:ErrorMessages.INTERNAL_SERVER_ERROR,
+    //       error: err.message
+    //   });
+    //   }
+    // }
     
   // Fetch orders for logged-in user
   async getUserOrders(req: Request, res: Response) {
@@ -82,6 +83,54 @@ class OrderController {
       });
       }
     }
+  
+   async purchaseProduct(req: Request, res: Response) {
+  try {
+    const { userId, email, productId, totalAmt, currency, sourceToken } = req.body;
+
+    if (!userId || !productId || !totalAmt || !currency || !sourceToken) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // call Stripe service
+    const payment = await stripeService.chargeCustomer(
+      userId,
+      email,  // ✅ email is required in chargeCustomer
+      totalAmt,
+      currency,
+      sourceToken,
+      `Purchase of product ${productId}`
+    );
+
+    // prepare order object
+    const order = {
+      userId,
+      productId,
+      totalAmt,
+      currency,
+      status: payment.status,
+      isDeleted: false,
+      stripePaymentIntentId: payment.paymentIntentData?.id,
+      stripeCustomerId: payment.paymentIntentData?.customer as string,
+      paymentMethod: payment.paymentIntentData?.payment_method as string,
+    };
+
+    // TODO: save `order` in DB
+    const savedOrder = await orderService.createOrder( order );
+
+    return res.status(201).json({
+      message: "Product purchased successfully",
+      order:savedOrder,
+    });
+  } catch (err: any) {
+    console.error("Purchase error:", err);
+    return res.status(500).json({
+      message: "Purchase failed",
+      error: err.message,
+    });
+  }
+  }
+
 }
     
 

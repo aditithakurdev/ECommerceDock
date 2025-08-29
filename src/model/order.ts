@@ -7,13 +7,13 @@ import User from "./user";
 interface OrderAttributes {
   id: string;
   totalAmt: number;
-  status: string; // pending | succeeded | failed
-  userId: string; // foreign key -> User.id
+  status: string; 
+  userId: string; 
   isDeleted: boolean;
-  currency: string; // NEW - "usd", "inr", etc.
-  stripePaymentIntentId?: string; // NEW - link to Stripe payment
-  stripeCustomerId?: string;      // NEW - link to Stripe customer
-  paymentMethod?: string;         // NEW - Stripe pm_xxx or card type
+  currency: string; 
+  stripePaymentIntentId?: string; 
+  stripeCustomerId?: string;      
+  paymentMethod?: string;         
   createdAt?: Date;
   updatedAt?: Date;
 }
