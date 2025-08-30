@@ -3,21 +3,27 @@ import { ErrorMessages } from "../../utils/enum/errorMessages";
 
 class OrderService {
     // Create a new user
-    async createOrder(data: { totalAmt: number; status: string; userId: string }) {
-        try {
-            // Destructure data
-            const { totalAmt, status, userId } = data;
-
-            // Create order
-            const order = await Order.create({
-                ...data,
-            });
-            console.log("Order created:", order.toJSON());
-        } catch (err: any) {
-        console.error("Error fetching user by ID:", err.message || err);
-        throw new Error(ErrorMessages.INTERNAL_SERVER_ERROR);
+    async createOrder(orderData: {
+        userId: string;
+        productId: string;
+        totalAmt: number;
+        currency: string;
+        status: string;
+        isDeleted: boolean;
+        stripePaymentIntentId: string;
+        stripeCustomerId: string;
+        paymentMethod: string;
+    }) {
+      try {
+        const order = await Order.create(orderData); 
+        console.log("Order created:", order.toJSON());
+        return order;
+      } catch (err: any) {
+        console.error("Error creating order:", err.message || err);
+        throw new Error("INTERNAL_SERVER_ERROR");
       }
     }
+
 
     async getUserOrders(userId: number) {
         try {

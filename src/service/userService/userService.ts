@@ -3,7 +3,7 @@ import bcrypt from "bcrypt"
 import { ErrorMessages } from "../../utils/enum/errorMessages";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { RolesEnum } from "../../utils/enum/userRole";
-
+import EmailService from "../email/emailService"
 class UserService {
   // Create a new user
   async createUser(data: { firstName: string; lastName?: string; email: string; password: string; role?: string }) {
@@ -24,9 +24,16 @@ class UserService {
       const user = await User.create({
         ...data,
         password: hashedPassword,
-        role: data.role as any as User['role'],
+        role: role as RolesEnum,
       });
       console.log("User created:", user.toJSON());
+      await EmailService.sendMail(
+       data.email,
+        firstName ,
+        "Welcome!",
+        "registrationEmail.ejs",
+      );
+
       return user;
     } catch (err: any) {
       console.error("Error fetching user by ID:", err.message || err);
