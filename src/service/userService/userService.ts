@@ -27,12 +27,12 @@ class UserService {
         role: role as RolesEnum,
       });
       console.log("User created:", user.toJSON());
-      await EmailService.sendMail(
-       data.email,
-        firstName ,
-        "Welcome!",
-        "registrationEmail.ejs",
-      );
+     await EmailService.sendMail(
+  data.email,                 // recipient
+  "Welcome!",                 // subject
+  "registrationEmail.ejs",    // template file
+  { name: firstName }         // template variables
+);
 
       return user;
     } catch (err: any) {

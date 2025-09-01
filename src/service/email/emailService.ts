@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
-
+import path from "path";
+import fs from "fs";
+import ejs from "ejs";
 class EmailService {
   private transporter;
 
@@ -15,8 +17,13 @@ class EmailService {
     });
   }
 
-  async sendMail(to: string, subject: string,  html: string, context: any) {
+  async sendMail(to: string, subject: string, templateName: string, data: any) {
     try {
+      // load template
+      // const templatePath = path.join(__dirname, `../templates/${templateName}`);
+      const templatePath = path.join(__dirname, `/template/${templateName}`);
+      const template = fs.readFileSync(templatePath, "utf-8");
+      const html = ejs.render(template, data);
       const info = await this.transporter.sendMail({
         from: `"Ecomm" <${process.env.SMTP_USER}>`,
         to,
