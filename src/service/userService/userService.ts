@@ -28,11 +28,11 @@ class UserService {
       });
       console.log("User created:", user.toJSON());
      await EmailService.sendMail(
-  data.email,                 // recipient
-  "Welcome!",                 // subject
-  "registrationEmail.ejs",    // template file
-  { name: firstName }         // template variables
-);
+      data.email,                 // recipient
+      "Welcome!",                 // subject
+      "registrationEmail.ejs",    // template file
+      { name: firstName }         // template variables
+    );
 
       return user;
     } catch (err: any) {
