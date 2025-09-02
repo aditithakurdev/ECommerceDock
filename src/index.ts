@@ -7,7 +7,6 @@ import { setupAssociations } from "./model/associations";
 dotenv.config();
 console.log("Main app starting...");
 import apiRoutes from './routes/routes'
-import { stripeWebhook } from "./routes/webhook";
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
@@ -34,8 +33,6 @@ const PORT = process.env.PORT || 3005;
 })();
 
 setupAssociations();
-// API Routes
-app.post("/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
 // All API routes prefixed with /api
 app.use('/api', apiRoutes);

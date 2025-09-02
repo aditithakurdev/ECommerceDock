@@ -4,6 +4,7 @@ import orderRouter from '../routes/order';
 import productRouter from '../routes/product';
 import categoryRouter from '../routes/category';
 import inventoryRouter from '../routes/inventory';
+import subscriptionRouter from '../routes/subscription';
 
 const router = Router();
 
@@ -11,6 +12,7 @@ router.use('/users', userRouter);
 router.use('/orders', orderRouter);
 router.use('/products', productRouter);
 router.use('/categories', categoryRouter); 
-router.use('/inventory', inventoryRouter)
+router.use('/inventory', inventoryRouter);
+router.use('/subscription', subscriptionRouter);
 
 export default router;
