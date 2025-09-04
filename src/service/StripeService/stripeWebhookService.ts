@@ -1,6 +1,4 @@
-import express from "express";
 import Stripe from "stripe";
-import bodyParser from "body-parser";
 
 export class StripeWebhookService {
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -42,7 +40,8 @@ export class StripeWebhookService {
     }
   }
 
-  verifyEvent(payload: Buffer, sig: string | string[]) {
+  verifyEvent(payload: Buffer | string, sig: string | string[]) {
+    console.log("paylod==============",payload)
     return this.stripe.webhooks.constructEvent(
       payload,
       sig,
@@ -50,4 +49,5 @@ export class StripeWebhookService {
     );
   }
 }
+
 export default new StripeWebhookService();
