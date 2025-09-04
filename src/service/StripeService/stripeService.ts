@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import UserSubscription from "../../model/userSubscriptions";
 import { UserSubscriptionEnum } from "../../utils/enum/userSubscriptionEnum";
+import { ErrorMessages } from "../../utils/enum/errorMessages";
 
 export class StripeService {
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -116,17 +117,17 @@ export class StripeService {
       customerId = customer.id;
     }
 
-    // 2. Create subscription in Stripe
-    const subscription = (await this.stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: priceId }],
-      payment_behavior: "default_incomplete",
-      expand: ["latest_invoice.payment_intent"],
-      // payment_settings: {
-      //   payment_method_types: ["card"],
-      //   save_default_payment_method: "on_subscription",
-      // },
-    })) as Stripe.Subscription;
+      // 2. Create subscription in Stripe
+      const subscription = (await this.stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        payment_behavior: "default_incomplete",
+        expand: ["latest_invoice.payment_intent", "items.data.price.product",],
+        payment_settings: {
+          payment_method_types: ["card"],
+          save_default_payment_method: "on_subscription",
+        },
+      })) as Stripe.Subscription;
 
       // 3. Extract subscription dates safely
       const startDate = subscription.start_date
