@@ -89,79 +89,82 @@ export class StripeService {
 
       let customerId: string;
 
-      if (savedSubscription?.stripeCustomerId) {
-        // Reuse existing customer
-        customerId = savedSubscription.stripeCustomerId;
+    if (savedSubscription?.stripeCustomerId) {
+      // Reuse existing customer
+      customerId = savedSubscription.stripeCustomerId;
 
-        // Attach payment method if not already attached
-        await this.stripe.paymentMethods
-          .attach(paymentMethodId, { customer: customerId })
-          .catch(() => {});
-
-        await this.stripe.customers.update(customerId, {
-          invoice_settings: { default_payment_method: paymentMethodId },
+      // Ensure payment method is attached
+      try {
+        await this.stripe.paymentMethods.attach(paymentMethodId, {
+          customer: customerId,
         });
-      } else {
-        // Create new customer
-        const customer = await this.stripe.customers.create({
-          email,
-          metadata: { userId },
-          payment_method: paymentMethodId,
-          invoice_settings: { default_payment_method: paymentMethodId },
-        });
-        customerId = customer.id;
+      } catch {
+        // ignore if already attached
       }
 
-      // 2. Create subscription in Stripe
-      const subscription = (await this.stripe.subscriptions.create({
-        customer: customerId,
-        items: [{ price: priceId }],
-        payment_behavior: "default_incomplete", // ensures invoice is created but payment must succeed
-        expand: ["latest_invoice.payment_intent"],
-        payment_settings: {
-          payment_method_types: ["card"],
-          save_default_payment_method: "on_subscription",
-        },
-      })) as Stripe.Subscription;
+      await this.stripe.customers.update(customerId, {
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+    } else {
+      // Create new customer
+      const customer = await this.stripe.customers.create({
+        email,
+        metadata: { userId },
+        payment_method: paymentMethodId,
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+      customerId = customer.id;
+    }
+
+    // 2. Create subscription in Stripe
+    const subscription = (await this.stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: priceId }],
+      payment_behavior: "default_incomplete",
+      expand: ["latest_invoice.payment_intent"],
+      // payment_settings: {
+      //   payment_method_types: ["card"],
+      //   save_default_payment_method: "on_subscription",
+      // },
+    })) as Stripe.Subscription;
 
       // 3. Extract subscription dates safely
       const startDate = subscription.start_date
     ? new Date(subscription.start_date * 1000)
     : new Date(); // fallback to now
 
-      const endDate = subscription.ended_at
-        ? new Date(subscription.ended_at * 1000)
-        : new Date(); // fallback to now
-
+    const endDate = subscription.ended_at
+      ? new Date(subscription.ended_at * 1000)
+      : undefined;
 
       const planName =
         subscription.items.data[0]?.price?.nickname || "Default Plan";
 
-      // 4. Save or update subscription in DB
-      if (savedSubscription) {
-        await savedSubscription.update({
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscription.id,
-          planName,
-          priceId,
-          status: subscription.status as UserSubscriptionEnum,
-          // startDate,
-          // endDate,
-          isDeleted: false,
-        });
-      } else {
-        savedSubscription = await UserSubscription.create({
-          userId,
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscription.id,
-          planName,
-          priceId,
-          status: subscription.status as UserSubscriptionEnum,
-          startDate,
-          endDate,
-          isDeleted: false,
-        });
-      }
+    // 4. Save subscription in DB
+    if (savedSubscription) {
+      await savedSubscription.update({
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        planName,
+        priceId,
+        status: subscription.status as UserSubscriptionEnum,
+        startDate,
+        endDate,
+        isDeleted: false,
+      });
+    } else {
+      savedSubscription = await UserSubscription.create({
+        userId,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        planName,
+        priceId,
+        status: subscription.status as UserSubscriptionEnum,
+        startDate,
+        endDate,
+        isDeleted: false,
+      });
+    }
 
       return {
         stripeSubscription: subscription,
