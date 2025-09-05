@@ -95,13 +95,9 @@ export class StripeService {
       customerId = savedSubscription.stripeCustomerId;
 
       // Ensure payment method is attached
-      try {
-        await this.stripe.paymentMethods.attach(paymentMethodId, {
-          customer: customerId,
-        });
-      } catch {
-        // ignore if already attached
-      }
+      await this.stripe.paymentMethods.attach(paymentMethodId, { customer: customerId }).catch(err => {
+      if (err.code !== "resource_already_attached") throw err;
+      });
 
       await this.stripe.customers.update(customerId, {
         invoice_settings: { default_payment_method: paymentMethodId },
@@ -122,12 +118,29 @@ export class StripeService {
         customer: customerId,
         items: [{ price: priceId }],
         payment_behavior: "default_incomplete",
-        expand: ["latest_invoice.payment_intent", "items.data.price.product",],
+        expand: ["latest_invoice.payment_intent", "items.data.price.product"],
         payment_settings: {
           payment_method_types: ["card"],
           save_default_payment_method: "on_subscription",
         },
-      })) as Stripe.Subscription;
+      } )) as Stripe.Subscription;
+
+    // --- SAFE handling of PaymentIntent ---
+    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null;
+
+    if (latestInvoice && (latestInvoice as any).payment_intent) {
+      const paymentIntent = (latestInvoice as any)
+        .payment_intent as Stripe.PaymentIntent;
+    
+      if (paymentIntent.status !== "succeeded") {
+        const confirmedIntent = await this.stripe.paymentIntents.confirm(
+          paymentIntent.id,
+          { payment_method: paymentMethodId }
+        );
+        console.log("Confirmed PaymentIntent:", confirmedIntent.status);
+      }
+    }
+
 
       // 3. Extract subscription dates safely
       const startDate = subscription.start_date
@@ -138,8 +151,9 @@ export class StripeService {
       ? new Date(subscription.ended_at * 1000)
       : undefined;
 
-      const planName =
-        subscription.items.data[0]?.price?.nickname || "Default Plan";
+    const planName =
+      (subscription.items.data[0]?.price?.nickname as string) ||
+      ((subscription.items.data[0]?.price?.product as any)?.name ?? "Default Plan");
 
     // 4. Save subscription in DB
     if (savedSubscription) {
@@ -170,7 +184,9 @@ export class StripeService {
       return {
         stripeSubscription: subscription,
         dbSubscription: savedSubscription,
-      };
+        clientSecret:
+        (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+    };
     } catch (error: any) {
       console.error("Stripe subscription error:", error);
 
