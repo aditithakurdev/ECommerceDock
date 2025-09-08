@@ -198,6 +198,29 @@ export class StripeService {
     }
   }
 
+  async syncSubscription(subId: string): Promise<void> {
+    try {
+      const stripeSub = (await this.stripe.subscriptions.retrieve(
+        subId
+      )) as Stripe.Subscription;
+
+      await UserSubscription.update(
+        {
+          status: stripeSub.status as UserSubscription["status"],
+          startDate: new Date(stripeSub.start_date * 1000),
+          endDate: new Date(stripeSub.end * 1000),
+          planName: stripeSub.items.data[0]?.price?.nickname || "Default Plan",
+          priceId: stripeSub.items.data[0]?.price?.id || "",
+        },
+        { where: { stripeSubscriptionId: subId } }
+      );
+
+      console.log(`✅ Synced subscription ${subId} with DB`);
+    } catch (err) {
+      console.error("❌ Failed to sync subscription:", err);
+      throw err; // re-throw to let controller handle errors if needed
+    }
+  }
 }
 
 export default new StripeService();

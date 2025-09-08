@@ -11,7 +11,7 @@ interface UserSubscriptionAttributes {
   planName: string; 
   priceId: string; 
   stripeCustomerId?: string;
-  status: "active" | "canceled" | "incomplete" | "past_due" | "unpaid" | "expired";
+  status: "active" | "canceled" | "incomplete" | "incomplete_expired" | "past_due" | "unpaid" | "expired";
   startDate: Date;
   endDate: Date;
   isDeleted: boolean;
@@ -34,7 +34,7 @@ class UserSubscription
   public planName!: string;
   public priceId!: string;
   public stripeCustomerId?: string; 
-  public status!: "active" | "canceled" | "incomplete" | "past_due" | "unpaid" | "expired";
+  public status!: "active" | "canceled" | "incomplete" | "incomplete_expired" | "past_due" | "unpaid" | "expired";
   public startDate!: Date;
   public endDate!: Date;
   public isDeleted!: boolean;
@@ -81,7 +81,7 @@ UserSubscription.init(
       allowNull: true,
     },
     stripeCustomerId: {
-      type: DataTypes.STRING, // <-- add column definition
+      type: DataTypes.STRING, 
       allowNull: true,
     },
     isDeleted: {

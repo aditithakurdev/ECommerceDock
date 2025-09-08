@@ -37,7 +37,21 @@ class StripeController {
         });
       }
     }
+  
+    async syncSubscription(req: Request, res: Response) {
+    const { subId } = req.params;
 
+    if (!subId) {
+      return res.status(400).json({ message: "Subscription ID is required" });
+    }
+
+    try {
+      await StripeService.syncSubscription(subId);
+      return res.status(200).json({ message: "Subscription synced successfully" });
+    } catch (err) {
+      return res.status(500).json({ message: "Failed to sync subscription", error: err });
+    }
+  }
 }
 
     export default new StripeController();
