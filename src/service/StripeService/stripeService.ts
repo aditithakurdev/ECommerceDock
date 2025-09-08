@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import UserSubscription from "../../model/userSubscriptions";
 import { UserSubscriptionEnum } from "../../utils/enum/userSubscriptionEnum";
+import { ErrorMessages } from "../../utils/enum/errorMessages";
 
 export class StripeService {
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -94,13 +95,9 @@ export class StripeService {
       customerId = savedSubscription.stripeCustomerId;
 
       // Ensure payment method is attached
-      try {
-        await this.stripe.paymentMethods.attach(paymentMethodId, {
-          customer: customerId,
-        });
-      } catch {
-        // ignore if already attached
-      }
+      await this.stripe.paymentMethods.attach(paymentMethodId, { customer: customerId }).catch(err => {
+      if (err.code !== "resource_already_attached") throw err;
+      });
 
       await this.stripe.customers.update(customerId, {
         invoice_settings: { default_payment_method: paymentMethodId },
@@ -116,17 +113,34 @@ export class StripeService {
       customerId = customer.id;
     }
 
-    // 2. Create subscription in Stripe
-    const subscription = (await this.stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: priceId }],
-      payment_behavior: "default_incomplete",
-      expand: ["latest_invoice.payment_intent"],
-      // payment_settings: {
-      //   payment_method_types: ["card"],
-      //   save_default_payment_method: "on_subscription",
-      // },
-    })) as Stripe.Subscription;
+      // 2. Create subscription in Stripe
+      const subscription = (await this.stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        payment_behavior: "default_incomplete",
+        expand: ["latest_invoice.payment_intent", "items.data.price.product"],
+        payment_settings: {
+          payment_method_types: ["card"],
+          save_default_payment_method: "on_subscription",
+        },
+      } )) as Stripe.Subscription;
+
+    // --- SAFE handling of PaymentIntent ---
+    const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null;
+
+    if (latestInvoice && (latestInvoice as any).payment_intent) {
+      const paymentIntent = (latestInvoice as any)
+        .payment_intent as Stripe.PaymentIntent;
+    
+      if (paymentIntent.status !== "succeeded") {
+        const confirmedIntent = await this.stripe.paymentIntents.confirm(
+          paymentIntent.id,
+          { payment_method: paymentMethodId }
+        );
+        console.log("Confirmed PaymentIntent:", confirmedIntent.status);
+      }
+    }
+
 
       // 3. Extract subscription dates safely
       const startDate = subscription.start_date
@@ -137,8 +151,9 @@ export class StripeService {
       ? new Date(subscription.ended_at * 1000)
       : undefined;
 
-      const planName =
-        subscription.items.data[0]?.price?.nickname || "Default Plan";
+    const planName =
+      (subscription.items.data[0]?.price?.nickname as string) ||
+      ((subscription.items.data[0]?.price?.product as any)?.name ?? "Default Plan");
 
     // 4. Save subscription in DB
     if (savedSubscription) {
@@ -169,7 +184,9 @@ export class StripeService {
       return {
         stripeSubscription: subscription,
         dbSubscription: savedSubscription,
-      };
+        clientSecret:
+        (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+    };
     } catch (error: any) {
       console.error("Stripe subscription error:", error);
 
@@ -181,6 +198,29 @@ export class StripeService {
     }
   }
 
+  async syncSubscription(subId: string): Promise<void> {
+    try {
+      const stripeSub = (await this.stripe.subscriptions.retrieve(
+        subId
+      )) as Stripe.Subscription;
+
+      await UserSubscription.update(
+        {
+          status: stripeSub.status as UserSubscription["status"],
+          startDate: new Date(stripeSub.start_date * 1000),
+          endDate: new Date(stripeSub.end * 1000),
+          planName: stripeSub.items.data[0]?.price?.nickname || "Default Plan",
+          priceId: stripeSub.items.data[0]?.price?.id || "",
+        },
+        { where: { stripeSubscriptionId: subId } }
+      );
+
+      console.log(`✅ Synced subscription ${subId} with DB`);
+    } catch (err) {
+      console.error("❌ Failed to sync subscription:", err);
+      throw err; // re-throw to let controller handle errors if needed
+    }
+  }
 }
 
 export default new StripeService();

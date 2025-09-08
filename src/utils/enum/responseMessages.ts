@@ -37,4 +37,8 @@ export enum ResponseMessages {
   CATEGORY_UPDATED = "Category updated successfully",
   CATEGORY_FETCHED = "Category fetched successfully",
   LIST_OF_CATEGORY_FETCHED = "Category fetched successfully",
+
+
+  //SUBSCRIPTION
+  SUBSCRIPTION_CREATED = "Subscription created successfully",
 }
