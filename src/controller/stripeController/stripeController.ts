@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import StripeService  from "../../service/StripeService/stripeService";
 import { ResponseMessages } from "../../utils/enum/responseMessages";
 import { ErrorMessages } from "../../utils/enum/errorMessages";
+import {stripeService} from "../../service/index";
 
 class StripeController {
     // Create a new Product
@@ -10,10 +10,10 @@ class StripeController {
       const { userId, email, paymentMethodId, priceId } = req.body;
 
       if (!userId || !email || !paymentMethodId || !priceId) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res.status(400).json({ message: ErrorMessages.MISSING_FIELD });
       }
 
-      const result = await StripeService.createUserSubscription(
+      const result = await stripeService.createUserSubscription(
         userId,
         email,
         paymentMethodId,
@@ -38,20 +38,20 @@ class StripeController {
       }
     }
   
-    async syncSubscription(req: Request, res: Response) {
-    const { subId } = req.params;
-
+  
+    async manualSync(req: Request, res: Response) {
+  try {
+    const { subId } = req.params; 
     if (!subId) {
-      return res.status(400).json({ message: "Subscription ID is required" });
+      return res.status(400).json({ error:ErrorMessages.MISSING_ID});
     }
 
-    try {
-      await StripeService.syncSubscription(subId);
-      return res.status(200).json({ message: "Subscription synced successfully" });
-    } catch (err) {
-      return res.status(500).json({ message: "Failed to sync subscription", error: err });
-    }
+    await stripeService.syncSubscription(subId);
+    res.json({ message: `Subscription ${subId} sync completed` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
+}
 }
 
     export default new StripeController();
