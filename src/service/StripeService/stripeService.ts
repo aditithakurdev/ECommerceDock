@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import UserSubscription from "../../model/userSubscriptions";
 import { UserSubscriptionEnum } from "../../utils/enum/userSubscriptionEnum";
 import { ErrorMessages } from "../../utils/enum/errorMessages";
+import { Op } from "sequelize";
 
 export class StripeService {
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -21,7 +22,7 @@ export class StripeService {
       // 1. Validate token
       const token = await this.stripe.tokens.retrieve(sourceToken);
       if (!token || !token.card) {
-        throw new Error("Invalid token provided");
+        throw new Error(ErrorMessages.INVALID_TOKEN);
       }
 
       // 2. Create customer (store userId in metadata)
@@ -204,23 +205,81 @@ export class StripeService {
         subId
       )) as Stripe.Subscription;
 
+      // safe date extraction
+      const startDate = stripeSub.start_date
+        ? new Date(Number(stripeSub.start_date) * 1000)
+        : null;
+
+      const endDate = stripeSub.ended_at
+        ? new Date(Number(stripeSub.ended_at) * 1000)
+        : stripeSub.trial_end
+        ? new Date(Number(stripeSub.trial_end) * 1000)
+        : null;
+
+      // safe plan & price extraction
+      const firstItem = stripeSub.items?.data?.[0];
+      const planName = firstItem?.price?.nickname ?? "Default Plan";
+      const priceId = firstItem?.price?.id ?? "";
+
+      // status mapping (keeps your enum or falls back)
+      const statusValues = Object.values(UserSubscriptionEnum);
+      const status = statusValues.includes(
+        stripeSub.status as UserSubscriptionEnum
+      )
+        ? (stripeSub.status as UserSubscriptionEnum)
+        : UserSubscriptionEnum.EXPIRED;
+
       await UserSubscription.update(
         {
-          status: stripeSub.status as UserSubscription["status"],
-          startDate: new Date(stripeSub.start_date * 1000),
-          endDate: new Date(stripeSub.end * 1000),
-          planName: stripeSub.items.data[0]?.price?.nickname || "Default Plan",
-          priceId: stripeSub.items.data[0]?.price?.id || "",
+          status,
+          // store as ISO strings to avoid TS/Sequelize typing mismatch
+          startDate: startDate as Date,
+          endDate: endDate as Date,
+          planName,
+          priceId,
         },
         { where: { stripeSubscriptionId: subId } }
       );
 
-      console.log(`✅ Synced subscription ${subId} with DB`);
+      console.log(` Synced subscription (stripeId=${subId})`);
     } catch (err) {
-      console.error("❌ Failed to sync subscription:", err);
-      throw err; // re-throw to let controller handle errors if needed
+      console.error(` Failed to sync subscription ${subId}:`, (err as Error).message);
+      throw err; 
     }
   }
+
+  // bulk sync: finds all subscriptions with a stripeSubscriptionId and calls syncSubscription
+  async syncAllSubscriptions(): Promise<void> {
+    console.log("🚀 Running bulk subscription sync...");
+
+    // filter to rows that actually have stripeSubscriptionId and are not deleted
+    const subscriptions = await UserSubscription.findAll({
+      where: {
+        stripeSubscriptionId: { [Op.ne]: null } as any,
+        isDeleted: false,
+      },
+      attributes: ["id", "stripeSubscriptionId"],
+    });
+
+    for (const row of subscriptions) {
+      const stripeId = (row as any).stripeSubscriptionId as string | null;
+      if (!stripeId) {
+        console.warn(` Skipping ${row.id} (no stripeSubscriptionId)`);
+        continue;
+      }
+
+      try {
+        // sequential call to avoid big concurrency spikes; change to parallel if you want
+        await this.syncSubscription(stripeId);
+      } catch (err) {
+        // Already logged in syncSubscription; continue to next
+        console.error(` - error syncing row id=${(row as any).id}`);
+      }
+    }
+
+    console.log("🎯 Bulk subscription sync complete");
+  }
+
 }
 
 export default new StripeService();
