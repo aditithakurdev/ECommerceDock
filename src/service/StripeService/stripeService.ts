@@ -3,6 +3,8 @@ import UserSubscription from "../../model/userSubscriptions";
 import { UserSubscriptionEnum } from "../../utils/enum/userSubscriptionEnum";
 import { ErrorMessages } from "../../utils/enum/errorMessages";
 import { Op } from "sequelize";
+import { User } from "../../model";
+import emailService from "../email/emailService";
 
 export class StripeService {
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -279,7 +281,38 @@ export class StripeService {
 
     console.log("🎯 Bulk subscription sync complete");
   }
+ async sendReminders() {
+    const today = new Date();
+    const threeDaysLater = new Date();
+    threeDaysLater.setDate(today.getDate() + 3);
 
+    // Fetch active subscriptions expiring within next 3 days
+    const subs = await UserSubscription.findAll({
+      where: {
+        status: "active",
+        endDate: {
+          [Op.between]: [today, threeDaysLater],
+        },
+      },
+    });
+
+    for (const sub of subs) {
+      const user = await User.findByPk(sub.userId, {
+        attributes: ["id", "firstName", "lastName", "email"],
+      });
+
+      if (user) {
+        console.log(`📧 Sending reminder to ${user.email}`);
+        await emailService.sendReminderEmail(user.email, {
+          name: `${user.firstName} ${user.lastName || ""}`,
+          plan: sub.planName,
+          endDate: sub.endDate,
+        });
+      }
+    }
+
+    console.log("✅ Subscription reminders sent");
+  }
 }
 
 export default new StripeService();

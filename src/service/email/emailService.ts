@@ -11,8 +11,8 @@ class EmailService {
       port: Number(process.env.SMTP_PORT) || 587,
       secure: false, // true for port 465
       auth: {
-        user: process.env.SMTP_USER, 
-        pass: process.env.SMTP_PASS, 
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
   }
@@ -38,16 +38,35 @@ class EmailService {
     }
   }
 
-   async sendReminderEmail(to: string, data: { name: string; plan: string; endDate: Date }) {
-    const mailOptions = {
-      from: `"Your App" <${process.env.EMAIL_USER}>`,
-      to,
-      subject: `Your ${data.plan} subscription renews soon`,
-      text: `Hi ${data.name},\n\nYour ${data.plan} subscription will renew on ${data.endDate.toDateString()}.
-              We just wanted to remind you in advance.\n\nThanks,\nYour Team`,
-    };
+  async sendReminderEmail(
+    to: string,
+    data: { name: string; plan: string; endDate: Date }
+  ) {
+    try {
+      // point to your template file (make sure it's placed correctly)
+      const templatePath = path.join(__dirname, "../templates/subscriptionReminder.ejs");
 
-    await this.transporter.sendMail(mailOptions);
+      const template = fs.readFileSync(templatePath, "utf-8");
+
+      // render with EJS
+      const html = ejs.render(template, {
+        ...data,
+        endDate: data.endDate,
+      });
+
+      const info = await this.transporter.sendMail({
+        from: `"Ecomm" <${process.env.SMTP_USER}>`,
+        to,
+        subject: "Subscription Renewal Reminder",
+        html,
+      });
+
+      console.log("📧 Reminder email sent:", info.messageId);
+      return info;
+    } catch (err: any) {
+      console.error(" Email error:", err.message || err);
+      throw err;
+    }
   }
 }
 

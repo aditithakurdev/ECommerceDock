@@ -20,42 +20,11 @@ cron.schedule("0 0 * * *", async () => {
   }
 
     // Run every day at midnight
-  cron.schedule("0 0 * * *", async () => {
-  console.log("⏰ Running subscription reminder job...");
-
+ cron.schedule("0 0 * * *", async () => {
   try {
-    const today = new Date();
-    const threeDaysLater = new Date();
-    threeDaysLater.setDate(today.getDate() + 3);
-
-    // Fetch subscriptions expiring within the next 3 days
-   const subs = await UserSubscription.findAll({
-  where: {
-    status: "active",
-    endDate: {
-      [Op.between]: [today, threeDaysLater],
-    },
-  },
-});
-
-for (const sub of subs) {
-  const user = await User.findByPk(sub.userId, {
-    attributes: ["id", "firstName", "lastName", "email"],
-  });
-
-  if (user) {
-    console.log(user.email);
-    await emailService.sendReminderEmail(user.email, {
-      name: `${user.firstName} ${user.lastName || ""}`,
-      plan: sub.planName,
-      endDate: sub.endDate,
-    });
-  }
-}
-
-
+    await stripeService.sendReminders();
   } catch (err) {
-    console.error(" Error in reminder job:", (err as Error).message);
+    console.error(" Cron job failed (reminder):", (err as Error).message);
   }
 });
 
