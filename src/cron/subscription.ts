@@ -1,72 +1,63 @@
 import cron from "node-cron";
 import Stripe  from "stripe";
-import { UserSubscription } from "../model/index";
+import { User, UserSubscription } from "../model/index";
 import { UserSubscriptionEnum } from "../utils/enum/userSubscriptionEnum";
 import { StripeController } from "../controller";
 import stripeService from "../service/StripeService/stripeService";
+import emailService from "../service/email/emailService";
+import { Op } from "sequelize";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-06-20" as any,
 });
 
-// Run every day at midnight
-// cron.schedule("0 0 * * *", async () => {
-//   console.log("🚀 Running subscription sync job...");
-
-//   try {
-//     const subscriptions = await UserSubscription.findAll();
-
-//     for (const sub of subscriptions) {
-//       try {
-//         if (!sub.stripeSubscriptionId) {
-//           console.warn(`⚠️ Skipping subscription ${sub.id}: missing Stripe ID`);
-//           continue;
-//         }
-
-//         // Fetch subscription from Stripe
-//         const stripeSub = (await stripe.subscriptions.retrieve(
-//           sub.stripeSubscriptionId
-//         )) as Stripe.Subscription;
-
-//         // Get end date safely
-//         const endDate = stripeSub.ended_at
-//           ? new Date(stripeSub.ended_at * 1000)
-//           : stripeSub.trial_end
-//           ? new Date(stripeSub.trial_end * 1000)
-//           : null;
-
-//         // Validate status
-//         const statusValues = Object.values(UserSubscriptionEnum);
-//         const status = statusValues.includes(
-//           stripeSub.status as UserSubscriptionEnum
-//         )
-//           ? (stripeSub.status as UserSubscriptionEnum)
-//           : UserSubscriptionEnum.EXPIRED;
-
-//         // Update DB record
-//         await UserSubscription.update(
-//           { status, endDate:endDate as any  },
-//           { where: { id: sub.id } }
-//         );
-
-//         console.log(`Subscription ${sub.id} synced with status: ${status}`);
-//       } catch (subError) {
-//         console.error(`Error syncing subscription ${sub.id}:`,
-//           (subError as Error).message
-//         );
-//       }
-//     }
-
-//     console.log("Subscription sync completed");
-//   } catch (error) {
-//     console.error(" Fatal error syncing subscriptions:", (error as Error).message);
-//   }
-// });
 cron.schedule("0 0 * * *", async () => {
   try {
-    await stripeService.syncAllSubscriptions(); // call service directly
-    console.log("✅ Cron job: subscriptions synced");
+    await stripeService.syncAllSubscriptions(); 
+    console.log(" Cron job: subscriptions synced");
   } catch (err) {
-    console.error("🔥 Cron job failed:", (err as Error).message);
+    console.error(" Cron job failed:", (err as Error).message);
   }
+
+    // Run every day at midnight
+  cron.schedule("0 0 * * *", async () => {
+  console.log("⏰ Running subscription reminder job...");
+
+  try {
+    const today = new Date();
+    const threeDaysLater = new Date();
+    threeDaysLater.setDate(today.getDate() + 3);
+
+    // Fetch subscriptions expiring within the next 3 days
+   const subs = await UserSubscription.findAll({
+  where: {
+    status: "active",
+    endDate: {
+      [Op.between]: [today, threeDaysLater],
+    },
+  },
+});
+
+for (const sub of subs) {
+  const user = await User.findByPk(sub.userId, {
+    attributes: ["id", "firstName", "lastName", "email"],
+  });
+
+  if (user) {
+    console.log(user.email);
+    await emailService.sendReminderEmail(user.email, {
+      name: `${user.firstName} ${user.lastName || ""}`,
+      plan: sub.planName,
+      endDate: sub.endDate,
+    });
+  }
+}
+
+
+  } catch (err) {
+    console.error(" Error in reminder job:", (err as Error).message);
+  }
+});
+
+
 });
