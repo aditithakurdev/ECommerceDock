@@ -37,6 +37,18 @@ class EmailService {
       throw err;
     }
   }
+
+   async sendReminderEmail(to: string, data: { name: string; plan: string; endDate: Date }) {
+    const mailOptions = {
+      from: `"Your App" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `Your ${data.plan} subscription renews soon`,
+      text: `Hi ${data.name},\n\nYour ${data.plan} subscription will renew on ${data.endDate.toDateString()}.
+              We just wanted to remind you in advance.\n\nThanks,\nYour Team`,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
 }
 
 export default new EmailService();

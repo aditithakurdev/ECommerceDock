@@ -2,6 +2,7 @@ import { DataTypes, Model, Optional } from "sequelize";
 import db from "../config/database";
 import { nanoid } from "nanoid";
 import { RolesEnum } from "../utils/enum/userRole";
+import UserSubscription from "./userSubscriptions";
 
 
 // Define the attributes

@@ -2,6 +2,7 @@ import { DataTypes, Model, Optional } from "sequelize";
 import db from "../config/database";
 import { nanoid } from "nanoid";
 import { UserSubscriptionEnum } from "../utils/enum/userSubscriptionEnum";
+import User from "./user";
 
 // Define the attributes
 interface UserSubscriptionAttributes {
@@ -96,5 +97,8 @@ UserSubscription.init(
     timestamps: true,
   }
 );
+// ✅ Define association here
+User.hasMany(UserSubscription, { foreignKey: "userId", as: "subscriptions" });
+UserSubscription.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 export default UserSubscription;
