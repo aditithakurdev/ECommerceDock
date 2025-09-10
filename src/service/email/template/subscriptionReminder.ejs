@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff;">
+      <!-- Header -->
+      <tr>
+        <td align="center" bgcolor="#007bff" style="padding: 30px 0 20px 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+          Subscription Renewal Reminder
+        </td>
+      </tr>
+
+      <!-- Body -->
+      <tr>
+        <td style="padding: 30px 40px; color: #333333; font-size: 16px;">
+          <p>Hi <%= name %>,</p>
+          <p>We hope you’re enjoying your subscription to <strong><%= plan %></strong>.</p>
+          <p>This is a friendly reminder that your subscription will renew on:</p>
+          <p style="font-size: 20px; font-weight: bold; color: #007bff; text-align: center;">
+            <%= endDate %>
+          </p>
+          <p>Your payment will be automatically deducted on the renewal date.</p>
+          <p>If you wish to continue, no action is required. If you want to cancel or update your subscription, please visit your account settings before the renewal date.</p>
+
+          <p style="margin-top: 30px;">
+            Need help? Contact our support team at
+            <a href="mailto:support@your-app.com" style="color: #007bff;">support@your-app.com</a>.
+          </p>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td bgcolor="#f4f4f4" style="text-align: center; padding: 20px; font-size: 12px; color: #888888;">
+          &copy; <%= new Date().getFullYear() %> Your Company. All rights reserved.
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
