@@ -311,7 +311,7 @@ export class StripeService {
       }
     }
 
-    console.log("✅ Subscription reminders sent");
+    console.log(" Subscription reminders sent");
   }
 }
 
