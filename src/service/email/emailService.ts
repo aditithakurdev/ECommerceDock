@@ -61,7 +61,7 @@ class EmailService {
         html,
       });
 
-      console.log("📧 Reminder email sent:", info.messageId);
+      console.log(" Reminder email sent:", info.messageId);
       return info;
     } catch (err: any) {
       console.error(" Email error:", err.message || err);

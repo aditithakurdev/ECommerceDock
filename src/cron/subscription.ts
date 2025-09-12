@@ -17,6 +17,7 @@ export class CronService {
     cron.schedule("0 0 * * *", async () => {
       try {
         await stripeService.sendReminders();
+        console.log(" sendReminders() started");
         console.log(" Cron job: reminders sent");
       } catch (err) {
         console.error(" Cron job failed (reminder):", (err as Error).message);
