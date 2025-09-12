@@ -279,17 +279,19 @@ export class StripeService {
       }
     }
 
-    console.log("🎯 Bulk subscription sync complete");
+    console.log(" Bulk subscription sync complete");
   }
  async sendReminders() {
     const today = new Date();
     const threeDaysLater = new Date();
-    threeDaysLater.setDate(today.getDate() + 3);
+   threeDaysLater.setDate(today.getDate() + 3);
+    console.log("Today:", today, " | 3 days later:", threeDaysLater);
 
     // Fetch active subscriptions expiring within next 3 days
     const subs = await UserSubscription.findAll({
       where: {
         status: "active",
+        // status: { [Op.in]: ["active", "incomplete"] },
         endDate: {
           [Op.between]: [today, threeDaysLater],
         },
@@ -302,7 +304,7 @@ export class StripeService {
       });
 
       if (user) {
-        console.log(`📧 Sending reminder to ${user.email}`);
+        console.log(` Sending reminder to ${user.email}`);
         await emailService.sendReminderEmail(user.email, {
           name: `${user.firstName} ${user.lastName || ""}`,
           plan: sub.planName,
