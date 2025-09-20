@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import './config/database';
 import db from './config/database';
-// import { userRouter, orderRouter, productRouter, categoryRouter } from "./routes/routes";
 import { setupAssociations } from "./model/associations";
 dotenv.config();
 console.log("Main app starting...");
@@ -40,6 +39,7 @@ app.get("/", (req, res) => {
   res.send("Hello from Node + TS + PostgreSQL!");
 });
 
+//Server is running on port 3005
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
