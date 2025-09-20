@@ -15,10 +15,10 @@ export enum ErrorMessages {
   AMOUNT_MUST_BE_NUMBER = "Amount must be a positive number",
 
 
-  //Category
+  //CATEGORY
   CATEGORY_NOT_FOUND = "Category not found",
 
-  //SUbscription
+  //SUBSCRIPTION
   MISSING_ID = "Missing subscription ID",
   MISSING_FIELD = "Missing fields",
 }
