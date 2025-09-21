@@ -3,9 +3,13 @@ import dotenv from "dotenv";
 import './config/database';
 import db from './config/database';
 import { setupAssociations } from "./model/associations";
+import apiRoutes from './routes/routes'
+import WebSocketService from "./utils/webSocket/webSocket";
+import http from "http";
+
+
 dotenv.config();
 console.log("Main app starting...");
-import apiRoutes from './routes/routes'
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
@@ -39,8 +43,18 @@ app.get("/", (req, res) => {
   res.send("Hello from Node + TS + PostgreSQL!");
 });
 
+// Create HTTP server
+const server = http.createServer(app);
+// Init WebSocket service (singleton)
+const wsService = WebSocketService.init(server);
+
+// Example: send broadcast from REST API
+app.get("/notify", (req, res) => {
+  wsService.broadcast("📢 New notification from API");
+  res.json({ message: "Notification sent" });
+});
 //Server is running on port 3005
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
