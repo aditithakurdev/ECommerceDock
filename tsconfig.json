@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "moduleResolution": "node"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "testClient.ts"],
   "exclude": ["node_modules", "dist"]
 }
