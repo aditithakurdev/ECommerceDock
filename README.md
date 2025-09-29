@@ -35,3 +35,7 @@ cd ECommerceDock
 
 # Install dependencies
 npm install
+
+
+# commnad to test socket.io for testing purpose
+npx ts-node testClient.ts
