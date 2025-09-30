@@ -4,7 +4,7 @@ import { authenticateToken } from "../middleware/auth";
 
 const router = Router();
 
-// router.post("/create", authenticateToken, orderController.createOrder);
+router.post("/create", authenticateToken, orderController.create);
 
 // User → get their own orders
 router.get("/my-orders", authenticateToken, orderController.getUserOrders);

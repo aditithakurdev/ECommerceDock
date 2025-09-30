@@ -9,44 +9,44 @@ import stripeService from "../../service/StripeService/stripeService";
 
 class OrderController {
     // Create a new order
-    // async create(req: Request, res: Response) {
-    //     try {
-    //         const { totalAmt, status } = req.body;
+    async create(req: Request, res: Response) {
+        try {
+            const { totalAmt, status } = req.body;
 
-    //         if (!totalAmt) {
-    //             return res.status(400).json({ message: "Total amount is required." });
-    //         }
+            if (!totalAmt) {
+                return res.status(400).json({ message: "Total amount is required." });
+            }
 
-    //         // JWT middleware ensures req.user exists
-    //         let userId;
-    //         if (typeof req.user === "string") {
-    //             userId = req.user;
-    //         } else if (req.user && typeof req.user === "object" && "id" in req.user) {
-    //             userId = (req.user as any).id;
-    //         }
-    //         if (!userId) {
-    //             return res.status(401).json({ message: ErrorMessages.USER_NOT_FOUND });
-    //         }
+            // JWT middleware ensures req.user exists
+            let userId;
+            if (typeof req.user === "string") {
+                userId = req.user;
+            } else if (req.user && typeof req.user === "object" && "id" in req.user) {
+                userId = (req.user as any).id;
+            }
+            if (!userId) {
+                return res.status(401).json({ message: ErrorMessages.USER_NOT_FOUND });
+            }
 
-    //         const order = await orderService.createOrder({
-    //             totalAmt,
-    //             status: OrderEnum.PENDING,
-    //             userId,
-    //         });
+            const order = await orderService.createOrder({
+                totalAmt,
+                status: OrderEnum.PENDING,
+                userId,
+            });
 
-    //       return res.status(201).json({
-    //           success:true,
-    //           message: ResponseMessages.ORDER_CREATED,
-    //           data: order,
-    //         });
-    //     } catch (err: any) {
-    //       console.error(err);
-    //      return res.status(500).json({
-    //      message:ErrorMessages.INTERNAL_SERVER_ERROR,
-    //       error: err.message
-    //   });
-    //   }
-    // }
+          return res.status(201).json({
+              success:true,
+              message: ResponseMessages.ORDER_CREATED,
+              data: order,
+            });
+        } catch (err: any) {
+          console.error(err);
+         return res.status(500).json({
+         message:ErrorMessages.INTERNAL_SERVER_ERROR,
+          error: err.message
+      });
+      }
+    }
     
   // Fetch orders for logged-in user
   async getUserOrders(req: Request, res: Response) {
