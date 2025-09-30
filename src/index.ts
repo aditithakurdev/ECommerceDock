@@ -40,7 +40,9 @@ setupAssociations();
 // All API routes prefixed with /api
 app.use('/api', apiRoutes);
 app.get("/", (req, res) => {
-  res.send("Hello from Node + TS + PostgreSQL!");
+  // res.send("Hello from Node + TS + PostgreSQL!");
+    res.send("HTTP + WebSocket Server Running...");
+
 });
 
 // Create HTTP server
