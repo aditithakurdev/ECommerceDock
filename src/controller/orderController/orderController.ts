@@ -30,7 +30,7 @@ class OrderController {
 
             const order = await orderService.createOrder({
                 totalAmt,
-                status: OrderEnum.PENDING,
+                status: OrderEnum.CONFIRMED,
                 userId,
             });
 
