@@ -7,7 +7,6 @@ import apiRoutes from './routes/routes'
 import WebSocketService from "./utils/webSocket/webSocket";
 import http from "http";
 import { Server } from 'socket.io';
-
 dotenv.config();
 console.log("Main app starting...");
 process.on("uncaughtException", (err) => {
