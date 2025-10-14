@@ -40,18 +40,22 @@ class StripeController {
   
   
     async manualSync(req: Request, res: Response) {
-  try {
-    const { subId } = req.params; 
-    if (!subId) {
-      return res.status(400).json({ error:ErrorMessages.MISSING_ID});
+    try {
+      const { subId } = req.params; 
+      if (!subId) {
+        return res.status(400).json({ error:ErrorMessages.MISSING_ID});
+      }
+
+      await stripeService.syncSubscription(subId);
+      res.json({ message: `Subscription ${subId} sync completed` });
+    } catch (err: any) {
+        console.error(err);
+        return res.status(500).json({
+          message:ErrorMessages.INTERNAL_SERVER_ERROR,
+          error: err.message
+        });
+      }
     }
-
-    await stripeService.syncSubscription(subId);
-    res.json({ message: `Subscription ${subId} sync completed` });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-}
 }
 
-    export default new StripeController();
+export default new StripeController();
