@@ -5,6 +5,8 @@ import { ErrorMessages } from "../../utils/enum/errorMessages";
 import { ResponseMessages } from "../../utils/enum/responseMessages";
 
 class InventoryController {
+
+  //Create inventory
   async createInventory(req: Request, res: Response) {
       try {
           const inventory = await inventoryService.addOrUpdateInventory(req.body);
@@ -18,6 +20,7 @@ class InventoryController {
       }
   }
 
+  //Fetch all inventory
   async getAllInventories(req: Request, res: Response) {
       try {
           const inventories = await inventoryService.getAllInventories();
@@ -31,6 +34,7 @@ class InventoryController {
       }
   }
 
+  //update Inventory
   async updateInventory(req: Request, res: Response) {
         try {
             const {id} = req.params; 
@@ -49,6 +53,7 @@ class InventoryController {
         }
     }
 
+  //Fetch specific inventory
   async getInventoryById(req: Request, res: Response) {
     try {
       const { id } = req.params; 
@@ -68,6 +73,7 @@ class InventoryController {
     }
   }
 
+  //INcrease stock
  async increaseStock(req: Request, res: Response) {
   try {
     const { id } = req.params;
@@ -92,7 +98,7 @@ class InventoryController {
     }
 }
 
-
+  //Decrease stock
   async decreaseStock(req: Request, res: Response) {
       try {
           const { id } = req.params; 
@@ -110,6 +116,7 @@ class InventoryController {
       }
   }
 
+  //Delete Inventory
   async deleteInventory(req: Request, res: Response) {
     try {
         const { id } = req.params;
@@ -126,7 +133,7 @@ class InventoryController {
         error: err.message || err,
         });
     }
-    }
+  }
 
 }
 
