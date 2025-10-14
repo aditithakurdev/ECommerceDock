@@ -32,7 +32,7 @@ class OrderService {
     }
   }
 
-
+    // fetch user order
     async getUserOrders(userId: number) {
         try {
             return await Order.findAll({ where: { userId } });

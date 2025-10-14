@@ -84,37 +84,38 @@ class OrderController {
       }
     }
   
+  // function to purchased product
    async purchaseProduct(req: Request, res: Response) {
-  try {
-    const { userId, email, productId, totalAmt, currency, sourceToken } = req.body;
+    try {
+      const { userId, email, productId, totalAmt, currency, sourceToken } = req.body;
 
-    if (!userId || !productId || !totalAmt || !currency || !sourceToken) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+      if (!userId || !productId || !totalAmt || !currency || !sourceToken) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
 
-    // call Stripe service
-    const payment = await stripeService.chargeCustomer(
-      userId,
-      email,  // ✅ email is required in chargeCustomer
-      totalAmt,
-      currency,
-      sourceToken,
-      `Purchase of product ${productId}`
-    );
+      // call Stripe service
+      const payment = await stripeService.chargeCustomer(
+        userId,
+        email,  // ✅ email is required in chargeCustomer
+        totalAmt,
+        currency,
+        sourceToken,
+        `Purchase of product ${productId}`
+      );
 
-    // prepare order object
-    const order = {
-      userId,
-      productId,
-      totalAmt,
-      currency,
-      status: payment.status,
-      isDeleted: false,
-      stripePaymentIntentId: payment.paymentIntentData?.id,
-      stripeCustomerId: payment.paymentIntentData?.customer as string,
-      paymentMethod: payment.paymentIntentData?.payment_method as string,
-    };
-
+      // prepare order object
+      const order = {
+        userId,
+        productId,
+        totalAmt,
+        currency,
+        status: payment.status,
+        isDeleted: false,
+        stripePaymentIntentId: payment.paymentIntentData?.id,
+        stripeCustomerId: payment.paymentIntentData?.customer as string,
+        paymentMethod: payment.paymentIntentData?.payment_method as string,
+      };
+    
     // TODO: save `order` in DB
     const savedOrder = await orderService.createOrder( order );
 

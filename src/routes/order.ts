@@ -12,6 +12,7 @@ router.get("/my-orders", authenticateToken, orderController.getUserOrders);
 // Admin → get all orders
 router.get("/all-orders", authenticateToken, orderController.getAllOrders);
 
+// puchase product
 router.post("/purchase", orderController.purchaseProduct);
 
 export default router;
