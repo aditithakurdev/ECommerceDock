@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import stripeService from "../service/StripeService/stripeService";
 
+//Cron job
 export class CronService {
   constructor() {
     //  First cron: sync subscriptions every day at midnight
