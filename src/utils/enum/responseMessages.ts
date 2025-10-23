@@ -20,7 +20,6 @@ export enum ResponseMessages {
   PRODUCT_FETCHED = "Product fetched successfully",
   PRODUCT_UPDATED = "Product updated successfully",
   
-
   //Inventory 
   INVENTORY_INCREASE = "Inventory increased successfully",
   INVENTORY_DECREASE = "Inventory decreased successfully",
@@ -29,12 +28,13 @@ export enum ResponseMessages {
   INVENTORY_FETCHED = "Inventory fetched successfully",
   INVENTORY_UPDATED = "Inventory updated successfully",
 
-
-
   //CATEGORY
   CATEGORY_CREATED = "Category created successfully",
   CATEGORY_DELETED = "Category deleted successfully",
   CATEGORY_UPDATED = "Category updated successfully",
   CATEGORY_FETCHED = "Category fetched successfully",
   LIST_OF_CATEGORY_FETCHED = "Category fetched successfully",
+
+  //SUBSCRIPTION
+  SUBSCRIPTION_CREATED = "Subscription created successfully",
 }

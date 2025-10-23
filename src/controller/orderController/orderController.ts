@@ -4,11 +4,12 @@ import { Request, Response } from "express";
 import orderService from "../../service/orderService/orderService";
 import { OrderEnum } from "../../utils/enum/order";
 import { RolesEnum } from "../../utils/enum/userRole";
+import stripeService from "../../service/StripeService/stripeService";
 
 
 class OrderController {
     // Create a new order
-    async createOrder(req: Request, res: Response) {
+    async create(req: Request, res: Response) {
         try {
             const { totalAmt, status } = req.body;
 
@@ -17,7 +18,7 @@ class OrderController {
             }
 
             // JWT middleware ensures req.user exists
-            let userId: string | undefined;
+            let userId;
             if (typeof req.user === "string") {
                 userId = req.user;
             } else if (req.user && typeof req.user === "object" && "id" in req.user) {
@@ -29,7 +30,7 @@ class OrderController {
 
             const order = await orderService.createOrder({
                 totalAmt,
-                status: OrderEnum.PENDING,
+                status: OrderEnum.CONFIRMED,
                 userId,
             });
 
@@ -82,6 +83,55 @@ class OrderController {
       });
       }
     }
+  
+  // function to purchased product
+   async purchaseProduct(req: Request, res: Response) {
+    try {
+      const { userId, email, productId, totalAmt, currency, sourceToken } = req.body;
+
+      if (!userId || !productId || !totalAmt || !currency || !sourceToken) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // call Stripe service
+      const payment = await stripeService.chargeCustomer(
+        userId,
+        email,  // ✅ email is required in chargeCustomer
+        totalAmt,
+        currency,
+        sourceToken,
+        `Purchase of product ${productId}`
+      );
+
+      // prepare order object
+      const order = {
+        userId,
+        productId,
+        totalAmt,
+        currency,
+        status: payment.status,
+        isDeleted: false,
+        stripePaymentIntentId: payment.paymentIntentData?.id,
+        stripeCustomerId: payment.paymentIntentData?.customer as string,
+        paymentMethod: payment.paymentIntentData?.payment_method as string,
+      };
+    
+    // TODO: save `order` in DB
+    const savedOrder = await orderService.createOrder( order );
+
+    return res.status(201).json({
+      message: "Product purchased successfully",
+      order:savedOrder,
+    });
+  } catch (err: any) {
+    console.error("Purchase error:", err);
+    return res.status(500).json({
+      message: "Purchase failed",
+      error: err.message,
+    });
+  }
+  }
+
 }
     
 
