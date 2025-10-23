@@ -106,6 +106,7 @@ class InventoryService {
     }
   }
 
+  //delete inventory
   async deleteInventory(id: string) {
   try {
     const inventory = await Inventory.findByPk(id);

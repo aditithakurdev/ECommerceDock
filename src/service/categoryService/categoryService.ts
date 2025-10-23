@@ -38,6 +38,7 @@ class CategoryService {
     }
   }
 
+  //update Category
   async updateCategory(id: string, data: Partial<{ name: string; description: string }>) {
     try {
       const category = await Category.findByPk(id);
@@ -48,6 +49,7 @@ class CategoryService {
     }
   }
 
+  //delete actegory
   async deleteCategory(id: string) {
     try {
       const category = await Category.findByPk(id);
